@@ -62,9 +62,9 @@
     50%      { transform: translateY(-4px); }
   }
   @keyframes cvPulse {
-    0%   { box-shadow: 0 0 0 0 rgba(92,242,168,0.55), 0 12px 32px rgba(92, 242, 168, 0.35), 0 0 0 2px rgba(255,255,255,0.2); }
-    70%  { box-shadow: 0 0 0 18px rgba(92,242,168,0), 0 12px 32px rgba(92, 242, 168, 0.35), 0 0 0 2px rgba(255,255,255,0.2); }
-    100% { box-shadow: 0 0 0 0 rgba(92,242,168,0), 0 12px 32px rgba(92, 242, 168, 0.35), 0 0 0 2px rgba(255,255,255,0.2); }
+    0%   { box-shadow: 0 0 0 0 rgba(15,122,74,0.55), 0 12px 32px rgba(15, 122, 74, 0.35), 0 0 0 2px rgba(255,255,255,0.2); }
+    70%  { box-shadow: 0 0 0 18px rgba(15,122,74,0), 0 12px 32px rgba(15, 122, 74, 0.35), 0 0 0 2px rgba(255,255,255,0.2); }
+    100% { box-shadow: 0 0 0 0 rgba(15,122,74,0), 0 12px 32px rgba(15, 122, 74, 0.35), 0 0 0 2px rgba(255,255,255,0.2); }
   }
   @keyframes cvFloat {
     0%, 100% { transform: translateY(0); }
@@ -74,6 +74,12 @@
     from { transform: scaleX(0); }
     to   { transform: scaleX(1); }
   }
+  @keyframes navTgPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(42,171,238,0.7), 0 2px 8px rgba(42, 171, 238, 0.4); }
+    50%  { box-shadow: 0 0 0 6px rgba(42,171,238,0), 0 2px 8px rgba(42, 171, 238, 0.4); }
+    100% { box-shadow: 0 0 0 0 rgba(42,171,238,0), 0 2px 8px rgba(42, 171, 238, 0.4); }
+  }
+  .nav-tg-btn { animation: navTgPulse 2.4s infinite; }
   html { scroll-behavior: smooth; }
   a { color: inherit; }
   body::before {
@@ -158,10 +164,10 @@
   .cv-fab {
     position: fixed; bottom: 104px; right: 16px; z-index: 999;
     width: 68px; height: 68px; border-radius: 50%;
-    background: linear-gradient(160deg, var(--acc2) 0%, #1a8f5a 100%);
+    background: linear-gradient(160deg, #0f7a4a 0%, #06543a 100%);
     color: #fff; text-decoration: none; border: none;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 12px 32px rgba(92, 242, 168, 0.35), 0 0 0 2px rgba(255,255,255,0.2);
+    box-shadow: 0 12px 32px rgba(15, 122, 74, 0.35), 0 0 0 2px rgba(255,255,255,0.2);
     animation: cvPulse 2.6s infinite, cvFloat 3.4s ease-in-out infinite;
     transition: transform .2s;
     font-weight: 700; cursor: pointer;
@@ -187,12 +193,6 @@
     .exp-num { display: none !important; }
     .edu-grid { grid-template-columns: 1fr !important; }
     .contact-row { flex-direction: column !important; gap: 6px !important; }
-    .tg-fab { width: 64px; height: 64px; bottom: 16px; right: 12px; }
-    .tg-fab svg { width: 32px; height: 32px; }
-    .tg-fab .tg-label { display: none; }
-    .cv-fab { width: 64px; height: 64px; bottom: 92px; right: 12px; }
-    .cv-fab svg { width: 30px; height: 30px; }
-    .cv-fab .cv-label { display: none; }
     .toolbar { font-size: 10px; }
   }
   @media (max-width: 900px) {
@@ -644,6 +644,7 @@ function NavBar({ mode, setMode, theme, setTheme }) {
         <a href="#publications" className="link-anim" style={navLinkSt}>PUBLICATIONS</a>
         <a href="#contact"      className="link-anim" style={navLinkSt}>CONTACT</a>
         <a href="https://t.me/aloecastles" target="_blank" rel="noopener noreferrer"
+           className="nav-tg-btn"
            style={{
              width: 28, height: 28, borderRadius: "50%",
              background: "linear-gradient(160deg, #2aabee 0%, #229ed9 100%)",
@@ -653,7 +654,7 @@ function NavBar({ mode, setMode, theme, setTheme }) {
            }}
            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.12)"}
            onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-           aria-label="Message on Telegram">
+           aria-label="Message on Telegram - Online now">
           <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
             <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.24 3.64 11.95c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.7L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
           </svg>
@@ -1181,8 +1182,6 @@ function App() {
         <PromptEnd />
         <VersionFooter />
       </div>
-      <CVDownloadFab />
-      <TelegramFab />
     </>
   );
 }
