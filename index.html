@@ -61,6 +61,15 @@
     0%, 100% { transform: translateY(0); }
     50%      { transform: translateY(-4px); }
   }
+  @keyframes cvPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(92,242,168,0.55), 0 12px 32px rgba(92, 242, 168, 0.35), 0 0 0 2px rgba(255,255,255,0.2); }
+    70%  { box-shadow: 0 0 0 18px rgba(92,242,168,0), 0 12px 32px rgba(92, 242, 168, 0.35), 0 0 0 2px rgba(255,255,255,0.2); }
+    100% { box-shadow: 0 0 0 0 rgba(92,242,168,0), 0 12px 32px rgba(92, 242, 168, 0.35), 0 0 0 2px rgba(255,255,255,0.2); }
+  }
+  @keyframes cvFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
   @keyframes underlineSlide {
     from { transform: scaleX(0); }
     to   { transform: scaleX(1); }
@@ -145,6 +154,29 @@
   }
   .tg-fab:hover .tg-label { opacity: 1; transform: translateY(-50%) translateX(-6px); }
 
+  /* ── CV download floating button ────────────────────────────────────────── */
+  .cv-fab {
+    position: fixed; bottom: 104px; right: 16px; z-index: 999;
+    width: 68px; height: 68px; border-radius: 50%;
+    background: linear-gradient(160deg, var(--acc2) 0%, #1a8f5a 100%);
+    color: #fff; text-decoration: none; border: none;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 12px 32px rgba(92, 242, 168, 0.35), 0 0 0 2px rgba(255,255,255,0.2);
+    animation: cvPulse 2.6s infinite, cvFloat 3.4s ease-in-out infinite;
+    transition: transform .2s;
+    font-weight: 700; cursor: pointer;
+  }
+  .cv-fab:hover { transform: scale(1.12); }
+  .cv-fab svg { width: 32px; height: 32px; }
+  .cv-fab .cv-label {
+    position: absolute; right: 76px; top: 50%; transform: translateY(-50%);
+    background: var(--pnl); color: var(--fg); border: 2px solid var(--acc2);
+    padding: 8px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 1.2px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+    white-space: nowrap; font-weight: 600;
+  }
+  .cv-fab:hover .cv-label { opacity: 1; transform: translateY(-50%) translateX(-6px); }
+
   /* responsive */
   @media (max-width: 640px) {
     .hero-grid { grid-template-columns: 1fr !important; }
@@ -155,9 +187,12 @@
     .exp-num { display: none !important; }
     .edu-grid { grid-template-columns: 1fr !important; }
     .contact-row { flex-direction: column !important; gap: 6px !important; }
-    .tg-fab { width: 72px; height: 72px; bottom: 20px; right: 12px; }
-    .tg-fab svg { width: 36px; height: 36px; }
+    .tg-fab { width: 64px; height: 64px; bottom: 16px; right: 12px; }
+    .tg-fab svg { width: 32px; height: 32px; }
     .tg-fab .tg-label { display: none; }
+    .cv-fab { width: 64px; height: 64px; bottom: 92px; right: 12px; }
+    .cv-fab svg { width: 30px; height: 30px; }
+    .cv-fab .cv-label { display: none; }
     .toolbar { font-size: 10px; }
   }
   @media (max-width: 900px) {
@@ -171,6 +206,7 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script type="text/babel">
 // ── colour tokens (theme-aware via CSS vars) ─────────────────────────────────
@@ -436,6 +472,198 @@ function TelegramFab() {
         <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.24 3.64 11.95c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.7L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
       </svg>
     </a>
+  );
+}
+
+// ── CV PDF generation ─────────────────────────────────────────────────────────
+function generateCVPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+  const PAGE_W = 210;
+  const PAGE_H = 297;
+  const MARGIN_X = 15;
+  const CONTENT_W = PAGE_W - MARGIN_X * 2;
+  let y = 18;
+
+  const ACCENT = [90, 61, 220];
+  const ACCENT2 = [26, 143, 90];
+  const MUTED = [110, 110, 130];
+  const TEXT = [25, 25, 35];
+
+  const checkPage = (needed = 10) => {
+    if (y + needed > PAGE_H - 15) {
+      doc.addPage();
+      y = 18;
+    }
+  };
+
+  const sectionHeader = (title) => {
+    checkPage(14);
+    y += 4;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...ACCENT);
+    doc.text(title.toUpperCase(), MARGIN_X, y);
+    doc.setDrawColor(...ACCENT);
+    doc.setLineWidth(0.3);
+    doc.line(MARGIN_X, y + 1.5, MARGIN_X + CONTENT_W, y + 1.5);
+    y += 6;
+    doc.setTextColor(...TEXT);
+  };
+
+  const writeLine = (text, opts = {}) => {
+    const { size = 9.5, font = "normal", color = TEXT, indent = 0, gap = 4.5 } = opts;
+    doc.setFont("helvetica", font);
+    doc.setFontSize(size);
+    doc.setTextColor(...color);
+    const lines = doc.splitTextToSize(text, CONTENT_W - indent);
+    lines.forEach((ln) => {
+      checkPage(gap);
+      doc.text(ln, MARGIN_X + indent, y);
+      y += gap;
+    });
+  };
+
+  // Header
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(...TEXT);
+  doc.text(P.bio.name, MARGIN_X, y);
+  y += 7;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.setTextColor(...ACCENT);
+  doc.text(P.bio.role, MARGIN_X, y);
+  y += 6;
+  doc.setFontSize(9);
+  doc.setTextColor(...MUTED);
+  const contact = `${P.bio.email}  |  ${P.bio.linkedin}  |  t.me/aloecastles  |  ${P.bio.location}`;
+  doc.text(contact, MARGIN_X, y);
+  y += 4;
+  doc.setDrawColor(...MUTED);
+  doc.setLineWidth(0.2);
+  doc.line(MARGIN_X, y, MARGIN_X + CONTENT_W, y);
+  y += 2;
+
+  // Summary
+  sectionHeader("Summary");
+  writeLine(P.bio.blurb, { size: 9.5, gap: 4.5 });
+
+  // Key stats
+  sectionHeader("Highlights");
+  P.stats.forEach((s) => {
+    writeLine(`• ${s.k} — ${s.v}`, { size: 9.5, gap: 4.5 });
+  });
+
+  // Experience
+  sectionHeader("Experience");
+  P.experience.forEach((e) => {
+    checkPage(14);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...TEXT);
+    doc.text(`${e.role} @ ${e.org}`, MARGIN_X, y);
+    y += 4.5;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(...MUTED);
+    doc.text(e.period, MARGIN_X, y);
+    y += 4.5;
+    e.bullets.forEach((b) => {
+      writeLine(`• ${b}`, { size: 9, gap: 4.2, indent: 3, color: TEXT });
+    });
+    y += 1.5;
+  });
+
+  // Key achievements
+  sectionHeader("Key Achievements");
+  P.achievements.forEach((a) => {
+    writeLine(`• ${a}`, { size: 9, gap: 4.2, indent: 3 });
+  });
+
+  // Skills
+  sectionHeader("Skills");
+  Object.keys(P.skills).forEach((cat) => {
+    checkPage(8);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.setTextColor(...ACCENT2);
+    doc.text(cat, MARGIN_X, y);
+    y += 4.2;
+    writeLine(P.skills[cat].join(" · "), { size: 9, gap: 4.2, indent: 3 });
+    y += 1;
+  });
+
+  // Platforms
+  sectionHeader("Platforms");
+  writeLine(P.platforms.join(" · "), { size: 9, gap: 4.2 });
+
+  // Shipped projects
+  sectionHeader("Shipped Titles");
+  P.projects.forEach((p) => {
+    checkPage(10);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.setTextColor(...TEXT);
+    doc.text(`${p.title} (${p.year}) — ${p.genre}`, MARGIN_X, y);
+    y += 4.2;
+    writeLine(`Role: ${p.role}`, { size: 9, gap: 4, indent: 3, color: MUTED });
+    writeLine(`Platforms: ${p.platforms.join(", ")}`, { size: 9, gap: 4, indent: 3, color: MUTED });
+    y += 1;
+  });
+
+  // NDA projects
+  sectionHeader("NDA Projects");
+  P.ndaProjects.forEach((n) => {
+    writeLine(`• ${n.tag} — ${n.genre} (${n.role})`, { size: 9, gap: 4.2, indent: 3 });
+  });
+
+  // Education
+  sectionHeader("Education");
+  P.education.forEach((e) => {
+    checkPage(8);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.setTextColor(...TEXT);
+    doc.text(e.title, MARGIN_X, y);
+    y += 4.2;
+    writeLine(`${e.org} · ${e.year}${e.credential ? ` · Credential ID ${e.credential.id}` : ""}`, { size: 9, gap: 4.2, indent: 3, color: MUTED });
+    y += 1;
+  });
+
+  // Publications
+  sectionHeader("Publications & Talks");
+  P.publications.forEach((pub) => {
+    writeLine(`• [${pub.lang}] ${pub.title} — ${pub.venue} (${pub.kind})`, { size: 9, gap: 4.2, indent: 3 });
+  });
+
+  // Footer with generation date
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...MUTED);
+    const now = new Date();
+    const stamp = now.toISOString().slice(0, 10);
+    doc.text(`Generated ${stamp}  ·  Page ${i}/${totalPages}`, MARGIN_X, PAGE_H - 8);
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  doc.save(`Oleksii_Rohalskyi_CV_${today}.pdf`);
+}
+
+function CVDownloadFab() {
+  return (
+    <button className="cv-fab" onClick={generateCVPDF} aria-label="Download CV as PDF" type="button">
+      <span className="cv-label">▸ Download CV (PDF)</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg>
+    </button>
   );
 }
 
@@ -979,6 +1207,7 @@ function App() {
         <PromptEnd />
         <VersionFooter />
       </div>
+      <CVDownloadFab />
       <TelegramFab />
     </>
   );
