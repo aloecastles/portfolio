@@ -630,6 +630,7 @@ function NavBar({ mode, setMode, theme, setTheme }) {
       fontFamily: MONO, fontSize: 11, color: MUT2, letterSpacing: 1.5,
       borderBottom: `1px solid ${BRD}`, paddingBottom: 14, marginBottom: 24,
       flexWrap: "wrap", gap: 14,
+      position: "sticky", top: 0, zIndex: 100, background: BG, paddingTop: 14,
     }}>
       <span style={{ color: ACC, fontWeight: 700 }}>★ TROPHY CASE / GAMEDEV-PM</span>
       <div className="toolbar" style={{ flexWrap: "wrap" }}>
@@ -642,7 +643,21 @@ function NavBar({ mode, setMode, theme, setTheme }) {
         <a href="#skills"       className="link-anim" style={navLinkSt}>SKILLS</a>
         <a href="#publications" className="link-anim" style={navLinkSt}>PUBLICATIONS</a>
         <a href="#contact"      className="link-anim" style={navLinkSt}>CONTACT</a>
-        <span style={{ color: ACC2 }}>● ONLINE</span>
+        <a href="https://t.me/aloecastles" target="_blank" rel="noopener noreferrer"
+           style={{
+             width: 28, height: 28, borderRadius: "50%",
+             background: "linear-gradient(160deg, #2aabee 0%, #229ed9 100%)",
+             display: "flex", alignItems: "center", justifyContent: "center",
+             color: "#fff", textDecoration: "none", fontSize: 14, fontWeight: 700,
+             transition: "transform 0.2s", cursor: "pointer", flexShrink: 0,
+           }}
+           onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.12)"}
+           onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+           aria-label="Message on Telegram">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+            <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.24 3.64 11.95c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.7L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
+          </svg>
+        </a>
       </span>
     </div>
   );
