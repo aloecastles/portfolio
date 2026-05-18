@@ -1,0 +1,215 @@
+// Shared portfolio data. Merged from 3 CVs:
+//   - gamedev26 (QA focus)
+//   - Producer_CV23042026 (production/PM focus)
+//   - Manager180426 (publishing/PM focus)
+// All visual treatments are original — no game art / logos reproduced.
+
+window.PORTFOLIO = {
+  bio: {
+    name: "Oleksii Rohalskyi",
+    role: "Game Production · PM · QA Leadership",
+    blurb:
+      "Game-industry PM and QA leader with 7+ yrs across QA, publishing coordination, and cross-platform delivery. Built the QA function from scratch at Pushka Studios, scaled the team 3× to 18+ people, and delivered every platform submission certified on the first attempt across PlayStation, Xbox, Switch, and Steam.",
+    email: "o.rohalskiy@gmail.com",
+    linkedin: "linkedin.com/in/oleksiirohalskyi",
+    location: "Kyiv, UA · remote",
+  },
+  stats: [
+    { k: "7+",  v: "years in games" },
+    { k: "8+",  v: "named titles shipped" },
+    { k: "5+",  v: "NDA projects" },
+    { k: "1st", v: "submission cert pass" },
+    { k: "3×",  v: "team scaled (to 18+)" },
+    { k: "6",   v: "platforms covered" },
+  ],
+  platforms: ["PS5", "PS4", "XSX", "XB1", "Switch", "PC", "Steam Deck", "Cloud", "SteamVR", "iOS", "Android"],
+  achievements: [
+    "First-attempt platform certifications across PS / Xbox / Switch / Steam — no resubmissions, no delays.",
+    "Built QA function from scratch at Pushka Studios; scaled team 3× to 18+ specialists across parallel projects.",
+    "Owned Jira workspace with JQL dashboards + automation flows wired into Slack and TestRail/Testomat — real-time status for PMs and CEO with no noise.",
+    "Acted as publishing-side interface to external dev studios: request intake, expectation-setting, daily syncs, build reviews, delivery demos.",
+    "Defined technical QA protocols for gen8/gen9 stability, gamepad/UI adaptation, l10n, cross-platform & cross-network MP, achievements; drove PIX + RAZOR profiling.",
+    "Validated IAP / analytics / ad integrations on mobile LiveOps cycles; contributed A/B test interpretation to product decisions.",
+  ],
+  projects: [
+    {
+      id: "plucky", title: "The Plucky Squire", year: 2024, genre: "Platformer",
+      role: "Co-dev + porting + patching",
+      platforms: ["PS5", "XSX", "Switch", "PC"],
+      tech: ["functional", "porting", "patching"],
+      note: "Console functional co-dev. Patch cycles.", hue: 158,
+    },
+    {
+      id: "flock", title: "Flock", year: 2024, genre: "Adventure",
+      role: "p2p EOS co-op · porting · patching",
+      platforms: ["PS5", "XSX", "PC"],
+      tech: ["EOS co-op", "porting", "p2p"],
+      note: "Epic Online Services p2p co-op implementation.", hue: 188,
+    },
+    {
+      id: "postal4", title: "POSTAL 4: No Regerts", year: 2024, genre: "FPS",
+      role: "Porting · DualSense · upscalers",
+      platforms: ["PS5", "XSX", "PC"],
+      tech: ["DualSense", "FSR/DLSS", "porting"],
+      note: "Special DualSense features + upscaler co-dev for PC.", hue: 12,
+    },
+    {
+      id: "spiderheck", title: "Spiderheck", year: 2023, genre: "Brawler",
+      role: "p2p co-op · gyro+aim · single Joy-Con",
+      platforms: ["PS5", "PS4", "XSX", "XB1", "Switch", "PC"],
+      tech: ["EOS co-op", "gyro aim", "porting"],
+      note: "Versus / party p2p. Single Joy-Con play on Switch.", hue: 280,
+    },
+    {
+      id: "filthy", title: "Filthy Animals: Heist Sim", year: 2023, genre: "Heist co-op",
+      role: "Network p2p + VOIP · l10n · porting",
+      platforms: ["PS5", "XSX", "Switch", "PC"],
+      tech: ["EOS p2p", "VOIP", "localization"],
+      note: "Network party + voice chat. Localization test pass.", hue: 50,
+    },
+    {
+      id: "farworld", title: "Farworld Pioneers", year: 2023, genre: "Sandbox",
+      role: "Porting · dedicated servers",
+      platforms: ["PS5", "XSX", "PC"],
+      tech: ["dedicated servers", "Win64", "porting"],
+      note: "Dedicated multiplayer server implementation.", hue: 95,
+    },
+    {
+      id: "flashback2", title: "Flashback 2", year: 2023, genre: "Action",
+      role: "Porting · patching",
+      platforms: ["PS5", "PS4", "XSX", "XB1", "Switch", "PC"],
+      tech: ["porting", "patching"],
+      note: "Cross-gen porting + patch cycles.", hue: 320,
+    },
+    {
+      id: "phantom", title: "Phantom Abyss", year: 2023, genre: "FP Adventure",
+      role: "Async multiplayer · leaderboards",
+      platforms: ["PS5", "XSX", "Switch", "PC"],
+      tech: ["async mp", "leaderboards", "porting"],
+      note: "Async MP + leaderboard porting.", hue: 220,
+    },
+  ],
+  ndaProjects: [
+    { tag: "NDA-01", genre: "TPS action-adventure", role: "functional · porting · optimization" },
+    { tag: "NDA-02", genre: "FPS/TPS survival looter-shooter", role: "co-dev · MP · GPU optim" },
+    { tag: "NDA-03", genre: "Turn-based board game", role: "porting" },
+    { tag: "NDA-04", genre: "City builder sim", role: "porting" },
+    { tag: "NDA-05", genre: "In-house vertical slice", role: "co-dev QA" },
+  ],
+  experience: [
+    {
+      org: "playduck.tech (AffCatalog)", role: "Project Manager",
+      period: "Mar 2026 – Apr 2026",
+      bullets: [
+        "Owned full delivery cycle on Scrum: sprint planning, task tracking, release prep.",
+        "Validated scope + estimates across QA, dev, and design workstreams.",
+        "Tracked API issues and migration tech debt ahead of commercial release.",
+      ],
+    },
+    {
+      org: "Codefather.Studio (ex-BG Games)", role: "PM / Operational Team Lead",
+      period: "Oct 2025 – Feb 2026",
+      bullets: [
+        "Managed project pipelines across gamedev, Web3, blockchain-adjacent products.",
+        "Coordinated planning, task tracking, sprint reviews, iterative improvements.",
+        "Kept technical and business stakeholders aligned across teams.",
+      ],
+    },
+    {
+      org: "Casual Games / LiveOps (NDA)", role: "Senior QA — iOS/Android",
+      period: "2025",
+      bullets: [
+        "Validated IAP, push notifications, ad integrations before each LiveOps update.",
+        "Analysed JSON + Logcat output to find integration-level issues.",
+        "Evaluated A/B test configs + analytics pipelines; contributed to product decisions.",
+        "Tested localisation across 14+ languages, WebView behaviour, cross-platform compat.",
+      ],
+    },
+    {
+      org: "Pushka Studios", role: "Lead QA / QA Manager",
+      period: "2022 – 2025 · 2.5 yrs",
+      bullets: [
+        "Owned QA for UE/Unity titles on PC (Steam, EGS, winGDK, cloud), Xbox, PlayStation, Switch, Steam Deck.",
+        "Delivered first-attempt certs across all releases — no resubmissions, no delays.",
+        "Built QA from scratch; hired/onboarded/mentored team 3× growth to 18+ people.",
+        "Acted as publishing-side interface to external dev studios; standardized workflows across partner engagements.",
+        "Designed Jira workspace + JQL dashboards + Slack automation; wired in TestRail/Testomat.",
+        "Strategic planning + capacity forecasting in Scrumban; reallocated specialists across parallel projects.",
+      ],
+    },
+    {
+      org: "1+1 Media", role: "Head of QA & CX",
+      period: "Apr 2021 – Jun 2022 · Kyiv",
+      bullets: [
+        "Led cross-platform OTT product (Web, Mobile, Smart TV, STB); managed QA & CX team up to 6.",
+        "Set up release pipelines + reporting; reduced regressions and gave leadership predictable delivery-risk visibility.",
+      ],
+    },
+    {
+      org: "VOLIA", role: "QA / CX Specialist",
+      period: "2016 – 2019 · Kyiv region",
+      bullets: [
+        "Multi-platform OTT app QC (Web, Mobile, TV, STB).",
+        "Technical consulting + customer-experience research.",
+      ],
+    },
+  ],
+  skills: {
+    Production: [
+      "Backlog + roadmap ownership",
+      "Sprint planning · Scrum / Kanban",
+      "Capacity forecasting",
+      "Risk identification + mitigation",
+      "Milestone + build review cycles",
+      "Stakeholder reporting + dashboards",
+      "Budgets, timelines, deliverables",
+      "External partner studio coordination",
+      "Platform certification + store submissions",
+      "LiveOps + post-launch ops",
+    ],
+    "Tech / Tools": [
+      "Jira (JQL · workspace admin · automation)",
+      "Confluence · Notion · Miro",
+      "TestRail · Testomat",
+      "Slack workflows + integrations",
+      "Git basics",
+      "Fiddler — network emulation",
+      "Unity / Unreal Editor",
+      "PIX · RAZOR profilers",
+      "UE console + launch params",
+      "Win64 dedicated servers",
+    ],
+    "Platforms / SDKs": [
+      "PlayStation devkits (PS4 / PS5)",
+      "Xbox devkits (XB1 / XSX · winGDK)",
+      "Nintendo Switch devkit",
+      "Steam Deck devkit",
+      "Steam · EGS · cloud gaming",
+      "iOS / Android (LiveOps)",
+      "SteamVR + Valve Index",
+      "Cross-platform & cross-network MP",
+      "Achievements design · localization",
+    ],
+    Leadership: [
+      "Hiring · interviewing · onboarding",
+      "Mentoring · perf reviews (≤18 ppl)",
+      "Resource allocation",
+      "Conflict resolution",
+      "Cross-functional coordination",
+      "External partner alignment",
+      "Strategic planning + scheduling",
+      "Team capacity prediction",
+      "Standardizing partner workflows",
+    ],
+  },
+  education: [
+    { title: "B.S. Computer Science", org: "National Aviation University, Ukraine", year: "2019" },
+    { title: "Project Management course", org: "IAMPM (PMBOK fundamentals, Agile delivery)", year: "2025" },
+  ],
+  links: [
+    { label: "GitHub", url: "#" },
+    { label: "LinkedIn", url: "https://linkedin.com/in/oleksiirohalskyi" },
+    { label: "Email", url: "mailto:o.rohalskiy@gmail.com" },
+    { label: "Blog", url: "#" },
+  ],
+};
