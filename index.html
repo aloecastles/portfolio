@@ -645,9 +645,9 @@ function generateCVPDF() {
   doc.setTextColor(...MUTED);
   const today = new Date().toISOString().slice(0, 10);
   doc.text(`Generated ${today}`, MARGIN, PAGE_H - 5);
-  const right = "Online portfolio: aloecastles.github.io";
+  const right = "https://aloecastles.github.io/portfolio/";
   const rightW = doc.getTextWidth(right);
-  doc.text(right, MARGIN + CONTENT_W - rightW, PAGE_H - 5);
+  doc.textWithLink(right, MARGIN + CONTENT_W - rightW, PAGE_H - 5, { pageNumber: 1 }, "https://aloecastles.github.io/portfolio/");
 
   doc.save(`Oleksii_Rohalskyi_CV_${today}.pdf`);
 }
