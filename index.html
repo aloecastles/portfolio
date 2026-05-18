@@ -9,43 +9,141 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@400;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
 <style>
+  /* ── theme tokens ─────────────────────────────────────────────────────── */
+  :root {
+    --bg: #0c0a14;
+    --fg: #e6e2f5;
+    --pnl: #100d1c;
+    --pnl-hi: #14102a;
+    --brd: #1d1830;
+    --brd2: #2d2748;
+    --mut: #8c84a8;
+    --mut2: #6b6489;
+    --acc: #b29cff;
+    --acc2: #5cf2a8;
+    --scan-rgba: rgba(178,156,255,0.025);
+    --tile-l1: 0.28;
+    --tile-l2: 0.20;
+    --tile-text: var(--bg);
+    --shadow: 0 0 0 1px rgba(178,156,255,0.06);
+    --fab-shadow: 0 8px 28px rgba(0,0,0,0.55), 0 0 0 1px rgba(178,156,255,0.18);
+  }
+  [data-theme="light"] {
+    --bg: #f5f1ea;
+    --fg: #1a1828;
+    --pnl: #ffffff;
+    --pnl-hi: #ece5d6;
+    --brd: #d6cfc1;
+    --brd2: #b8af9c;
+    --mut: #5a536e;
+    --mut2: #7a7390;
+    --acc: #5a3ddc;
+    --acc2: #1a8f5a;
+    --scan-rgba: rgba(90,61,220,0.045);
+    --tile-l1: 0.78;
+    --tile-l2: 0.86;
+    --tile-text: #ffffff;
+    --shadow: 0 0 0 1px rgba(0,0,0,0.04);
+    --fab-shadow: 0 8px 24px rgba(0,0,0,0.18), 0 0 0 1px rgba(90,61,220,0.25);
+  }
+
   html, body, #root { min-height: 100%; }
-  body { margin: 0; font-family: 'Inter Tight', system-ui, sans-serif; background: #0c0a14; color: #e6e2f5; }
+  body { margin: 0; font-family: 'Inter Tight', system-ui, sans-serif;
+    background: var(--bg); color: var(--fg); transition: background .25s, color .25s; }
   * { box-sizing: border-box; }
   @keyframes blink { 50% { opacity: 0; } }
+  @keyframes tgPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(35,166,232,0.55), var(--fab-shadow); }
+    70%  { box-shadow: 0 0 0 18px rgba(35,166,232,0); var(--fab-shadow); }
+    100% { box-shadow: 0 0 0 0 rgba(35,166,232,0); var(--fab-shadow); }
+  }
+  @keyframes tgFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+  @keyframes underlineSlide {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
   html { scroll-behavior: smooth; }
   a { color: inherit; }
   body::before {
     content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 1;
-    background: repeating-linear-gradient(0deg, rgba(178,156,255,0.025) 0 1px, transparent 1px 3px);
+    background: repeating-linear-gradient(0deg, var(--scan-rgba) 0 1px, transparent 1px 3px);
   }
   #root { position: relative; z-index: 2; }
 
-  /* density toggle */
-  .dt { position: fixed; bottom: 16px; right: 16px; z-index: 100; display: flex; align-items: center; gap: 6px;
-    background: rgba(16,13,28,0.92); border: 1px solid #1d1830; padding: 7px 10px;
-    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #6b6489;
-    backdrop-filter: blur(12px); letter-spacing: 1px; }
-  .dt-lbl { color: #6b6489; }
-  .dt-btn { background: none; border: 1px solid #2d2748; color: #6b6489; padding: 2px 8px;
-    font-family: inherit; font-size: 10px; cursor: pointer; letter-spacing: 1px; }
-  .dt-btn.on { border-color: #b29cff; color: #b29cff; }
-  .dt-btn:hover:not(.on) { border-color: #2d2748; color: #8c84a8; }
+  /* ── top toolbar (mode + theme) ─────────────────────────────────────── */
+  .toolbar { display: inline-flex; gap: 10px; align-items: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1.2px; }
+  .seg { display: inline-flex; align-items: stretch; border: 2px solid var(--brd2);
+    background: var(--pnl); box-shadow: var(--shadow); }
+  .seg-lbl { padding: 6px 10px; color: var(--mut2); border-right: 1px dashed var(--brd2);
+    align-self: stretch; display: flex; align-items: center; }
+  .seg-btn { background: transparent; border: 0; padding: 7px 12px; color: var(--mut);
+    font-family: inherit; font-size: 11px; cursor: pointer; letter-spacing: 1.2px;
+    transition: background .15s, color .15s; font-weight: 600; }
+  .seg-btn + .seg-btn { border-left: 1px solid var(--brd); }
+  .seg-btn:hover:not(.on) { color: var(--fg); background: var(--pnl-hi); }
+  .seg-btn.on { background: var(--acc); color: var(--bg); font-weight: 800; }
+
+  /* ── animated link underline ────────────────────────────────────────── */
+  .link-anim { position: relative; text-decoration: none; padding-bottom: 1px;
+    transition: color .15s; display: inline-block; }
+  .link-anim::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -2px;
+    height: 1px; background: currentColor;
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .25s ease, background .15s;
+  }
+  .link-anim:hover { color: var(--acc); }
+  .link-anim:hover::after { transform: scaleX(1); }
+  .link-anim.lk2:hover { color: var(--acc2); }
 
   /* trophy card hover */
   a.trophy-row { transition: border-color .15s, background .15s, transform .15s; }
-  a.trophy-row:hover { border-color: #b29cff; background: #14102a; }
-  a.trophy-row:focus-visible { outline: 2px solid #b29cff; outline-offset: 2px; }
+  a.trophy-row:hover { border-color: var(--acc); background: var(--pnl-hi); }
+  a.trophy-row:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+  a.trophy-row .trophy-arrow { opacity: 0.4; transition: opacity .2s, transform .2s; }
+  a.trophy-row:hover .trophy-arrow { opacity: 1; transform: translateX(3px); }
 
   /* publication card hover */
   a.pub-card { transition: border-color .15s, background .15s; }
-  a.pub-card:hover { border-color: #5cf2a8; background: #14102a; }
-  a.pub-card:focus-visible { outline: 2px solid #5cf2a8; outline-offset: 2px; }
+  a.pub-card:hover { border-color: var(--acc2); background: var(--pnl-hi); }
+  a.pub-card:focus-visible { outline: 2px solid var(--acc2); outline-offset: 2px; }
 
   /* credential link */
-  .cred-link { color: #5cf2a8; text-decoration: none; border-bottom: 1px dashed #2d2748;
+  .cred-link { color: var(--acc2); text-decoration: none; border-bottom: 1px dashed var(--brd2);
     padding-bottom: 1px; transition: border-color .15s; }
-  .cred-link:hover { border-bottom-color: #5cf2a8; }
+  .cred-link:hover { border-bottom-color: var(--acc2); }
+
+  /* contact card hover */
+  a.contact-row:hover { border-color: var(--acc) !important; background: var(--pnl-hi) !important; }
+  a.contact-row:hover .contact-arrow { opacity: 1; transform: translateX(3px); }
+  a.contact-row:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+
+  /* ── Telegram floating button ───────────────────────────────────────── */
+  .tg-fab {
+    position: fixed; bottom: 24px; right: 16px; z-index: 999;
+    width: 68px; height: 68px; border-radius: 50%;
+    background: linear-gradient(160deg, #2aabee 0%, #229ed9 100%);
+    color: #fff; text-decoration: none;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 12px 32px rgba(42, 171, 238, 0.35), 0 0 0 2px rgba(255,255,255,0.2);
+    animation: tgPulse 2.6s infinite, tgFloat 3.4s ease-in-out infinite;
+    transition: transform .2s;
+    font-weight: 700;
+  }
+  .tg-fab:hover { transform: scale(1.12); }
+  .tg-fab svg { width: 32px; height: 32px; }
+  .tg-fab .tg-label {
+    position: absolute; right: 76px; top: 50%; transform: translateY(-50%);
+    background: var(--pnl); color: var(--fg); border: 2px solid var(--acc2);
+    padding: 8px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 1.2px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+    white-space: nowrap; font-weight: 600;
+  }
+  .tg-fab:hover .tg-label { opacity: 1; transform: translateY(-50%) translateX(-6px); }
 
   /* responsive */
   @media (max-width: 640px) {
@@ -56,6 +154,10 @@
     .exp-grid { grid-template-columns: 1fr !important; }
     .exp-num { display: none !important; }
     .edu-grid { grid-template-columns: 1fr !important; }
+    .tg-fab { width: 72px; height: 72px; bottom: 20px; right: 12px; }
+    .tg-fab svg { width: 36px; height: 36px; }
+    .tg-fab .tg-label { display: none; }
+    .toolbar { font-size: 10px; }
   }
   @media (max-width: 900px) {
     .skills-grid { grid-template-columns: repeat(2,1fr) !important; }
@@ -70,16 +172,17 @@
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
 <script type="text/babel">
-// ── colour tokens ─────────────────────────────────────────────────────────────
-const ACC  = "#b29cff";
-const ACC2 = "#5cf2a8";
-const BG   = "#0c0a14";
-const PNL  = "#100d1c";
-const BRD  = "#1d1830";
-const BRD2 = "#2d2748";
-const FG   = "#e6e2f5";
-const MUT  = "#8c84a8";
-const MUT2 = "#6b6489";
+// ── colour tokens (theme-aware via CSS vars) ─────────────────────────────────
+const ACC  = "var(--acc)";
+const ACC2 = "var(--acc2)";
+const BG   = "var(--bg)";
+const PNL  = "var(--pnl)";
+const BRD  = "var(--brd)";
+const BRD2 = "var(--brd2)";
+const FG   = "var(--fg)";
+const MUT  = "var(--mut)";
+const MUT2 = "var(--mut2)";
+const TILE_TEXT = "var(--tile-text)";
 const MONO = "'JetBrains Mono', ui-monospace, monospace";
 const SANS = "'Inter Tight', 'Space Grotesk', sans-serif";
 
@@ -115,17 +218,19 @@ const P = {
     { id:"flock",     title:"Flock",                      year:2024, genre:"Adventure",     role:"p2p EOS co-op · porting · patching",     platforms:["PS5","XSX","PC"],                 tech:["EOS co-op","porting","p2p"],             hue:188, url:"https://store.playstation.com/en-us/concept/10008437",                                                       store:"PS STORE" },
     { id:"postal4",   title:"POSTAL 4: No Regerts",       year:2024, genre:"FPS",           role:"Porting · DualSense · upscalers",        platforms:["PS5","XSX","PC"],                 tech:["DualSense","FSR/DLSS","porting"],        hue:12,  url:"https://store.playstation.com/en-us/product/UP7876-PPSA09910_00-POSTAL4NOREGERTS",                            store:"PS STORE" },
     { id:"spiderheck",title:"Spiderheck",                 year:2023, genre:"Brawler",       role:"p2p co-op · gyro+aim · single Joy-Con",  platforms:["PS5","PS4","XSX","XB1","Switch","PC"], tech:["EOS co-op","gyro aim","porting"],   hue:280, url:"https://store.steampowered.com/app/1329500/SpiderHeck/",                                                    store:"STEAM" },
-    { id:"filthy",    title:"Filthy Animals: Heist Sim",  year:2023, genre:"Heist co-op",  role:"Network p2p + VOIP · l10n · porting",    platforms:["PS5","XSX","Switch","PC"],        tech:["EOS p2p","VOIP","localization"],         hue:50,  url:"https://store.steampowered.com/app/1195420/Filthy_Animals__Heist_Simulator/",                                store:"STEAM" },
+    { id:"filthy",    title:"Filthy Animals: Heist Sim",  year:2023, genre:"Heist co-op",  role:"Network p2p + VOIP · porting",           platforms:["PS5","XSX","Switch","PC"],        tech:["EOS p2p","VOIP","porting"],              hue:50,  url:"https://store.steampowered.com/app/1195420/Filthy_Animals__Heist_Simulator/",                                store:"STEAM" },
     { id:"farworld",  title:"Farworld Pioneers",          year:2023, genre:"Sandbox",       role:"Porting · dedicated servers",            platforms:["PS5","XSX","PC"],                 tech:["dedicated servers","Win64","porting"],   hue:95,  url:"https://store.playstation.com/en-us/concept/10007173",                                                       store:"PS STORE" },
     { id:"flashback2",title:"Flashback 2",                year:2023, genre:"Action",        role:"Porting · patching",                     platforms:["PS5","PS4","XSX","XB1","Switch","PC"], tech:["porting","patching"],               hue:320, url:"https://store.playstation.com/uk-ua/concept/10005443",                                                       store:"PS STORE" },
     { id:"phantom",   title:"Phantom Abyss",              year:2023, genre:"FP Adventure",  role:"Async multiplayer · leaderboards",       platforms:["PS5","XSX","Switch","PC"],        tech:["async mp","leaderboards","porting"],     hue:220, url:"https://www.xbox.com/en-Us/games/store/phantom-abyss-game-preview/9nh9w1n1xwv5",                             store:"XBOX" },
+    { id:"grind",     title:"Grind Survivors",            year:2024, genre:"Action roguelike",     role:"PC testing · performance optimization",   platforms:["PC"],                             tech:["bullet-hell","roguelike","perf-profiling"], hue:35,  url:"https://store.steampowered.com/app/3816930/Grind_Survivors/",                                                         store:"STEAM" },
   ],
   ndaProjects: [
-    { tag:"NDA-01", genre:"TPS action-adventure",          role:"functional · porting · optimization" },
-    { tag:"NDA-02", genre:"FPS/TPS survival looter-shooter",role:"co-dev · MP · GPU optim" },
-    { tag:"NDA-03", genre:"Turn-based board game",         role:"porting" },
-    { tag:"NDA-04", genre:"City builder sim",              role:"porting" },
-    { tag:"NDA-05", genre:"In-house vertical slice",       role:"co-dev QA" },
+    { tag:"NDA-01", genre:"TPS action-adventure",              role:"functional · porting · optimization" },
+    { tag:"NDA-02", genre:"FPS/TPS survival looter-shooter",   role:"co-dev · MultiPlayer · GPU optim · PS/Xbox porting" },
+    { tag:"NDA-03", genre:"Turn-based board game",             role:"porting" },
+    { tag:"NDA-04", genre:"City builder sim",                  role:"porting" },
+    { tag:"NDA-05", genre:"Tactical extraction shooter (mobile)", role:"PvPvE raid loop · LiveOps QA · loot/extraction balance" },
+    { tag:"NDA-06", genre:"Strategy board game (mobile)",      role:"factions · alliances · decision-tree QA" },
   ],
   experience: [
     {
@@ -147,6 +252,8 @@ const P = {
     {
       org:"Casual Games / LiveOps (NDA)", role:"Senior QA — iOS/Android", period:"2025",
       bullets:[
+        "Physics-based collectible cap-flipping title: validated drag-aim-throw input on iOS/Android, daily mission rotations, team/community events, trading flows, IAP edge cases.",
+        "Hybrid-casual idle/tycoon hotel-management sim: regression of upgrade economies, staff/AI scheduling, ad-reward gating, cross-room progression, offline-earnings calculation.",
         "Validated IAP, push notifications, ad integrations before each LiveOps update.",
         "Analysed JSON + Logcat output to find integration-level issues.",
         "Evaluated A/B test configs + analytics pipelines; contributed to product decisions.",
@@ -293,23 +400,63 @@ function SectionHeader({ cmd, sub }) {
 }
 
 // ── nav ───────────────────────────────────────────────────────────────────────
-const navLinkSt = { color: MUT2, textDecoration: "none" };
+const navLinkSt = { color: MUT2 };
 
-function NavBar() {
+function ModeToggle({ mode, setMode }) {
+  return (
+    <div className="seg" role="group" aria-label="Layout mode">
+      <span className="seg-lbl">MODE</span>
+      <button className={`seg-btn ${mode === "pc" ? "on" : ""}`}
+              onClick={() => setMode("pc")} aria-pressed={mode === "pc"}>▣ PC</button>
+      <button className={`seg-btn ${mode === "mobile" ? "on" : ""}`}
+              onClick={() => setMode("mobile")} aria-pressed={mode === "mobile"}>▤ MOBILE</button>
+    </div>
+  );
+}
+
+function ThemeToggle({ theme, setTheme }) {
+  return (
+    <div className="seg" role="group" aria-label="Color theme">
+      <span className="seg-lbl">THEME</span>
+      <button className={`seg-btn ${theme === "dark" ? "on" : ""}`}
+              onClick={() => setTheme("dark")} aria-pressed={theme === "dark"}>◑ DARK</button>
+      <button className={`seg-btn ${theme === "light" ? "on" : ""}`}
+              onClick={() => setTheme("light")} aria-pressed={theme === "light"}>◐ LIGHT</button>
+    </div>
+  );
+}
+
+function TelegramFab() {
+  return (
+    <a className="tg-fab" href="https://t.me/aloecastles" target="_blank"
+       rel="noopener noreferrer" aria-label="Message on Telegram">
+      <span className="tg-label">▸ Ping me on Telegram</span>
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.24 3.64 11.95c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.7L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
+      </svg>
+    </a>
+  );
+}
+
+function NavBar({ mode, setMode, theme, setTheme }) {
   return (
     <div style={{
       display: "flex", justifyContent: "space-between", alignItems: "center",
       fontFamily: MONO, fontSize: 11, color: MUT2, letterSpacing: 1.5,
-      borderBottom: `1px solid ${BRD}`, paddingBottom: 12, marginBottom: 28,
-      flexWrap: "wrap", gap: 12,
+      borderBottom: `1px solid ${BRD}`, paddingBottom: 14, marginBottom: 24,
+      flexWrap: "wrap", gap: 14,
     }}>
-      <span style={{ color: ACC }}>★ TROPHY CASE / GAMEDEV-PM</span>
-      <span style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
-        <a href="#projects" style={navLinkSt}>PROJECTS</a>
-        <a href="#experience" style={navLinkSt}>EXPERIENCE</a>
-        <a href="#skills" style={navLinkSt}>SKILLS</a>
-        <a href="#publications" style={navLinkSt}>PUBLICATIONS</a>
-        <a href="#contact" style={navLinkSt}>CONTACT</a>
+      <span style={{ color: ACC, fontWeight: 700 }}>★ TROPHY CASE / GAMEDEV-PM</span>
+      <div className="toolbar" style={{ flexWrap: "wrap" }}>
+        <ModeToggle mode={mode} setMode={setMode} />
+        <ThemeToggle theme={theme} setTheme={setTheme} />
+      </div>
+      <span style={{ display: "flex", gap: 18, flexWrap: "wrap", alignItems: "center" }}>
+        <a href="#projects"     className="link-anim" style={navLinkSt}>PROJECTS</a>
+        <a href="#experience"   className="link-anim" style={navLinkSt}>EXPERIENCE</a>
+        <a href="#skills"       className="link-anim" style={navLinkSt}>SKILLS</a>
+        <a href="#publications" className="link-anim" style={navLinkSt}>PUBLICATIONS</a>
+        <a href="#contact"      className="link-anim" style={navLinkSt}>CONTACT</a>
         <span style={{ color: ACC2 }}>● ONLINE</span>
       </span>
     </div>
@@ -342,9 +489,11 @@ function Hero({ compact }) {
           display: "flex", gap: 12, marginTop: 16, fontFamily: MONO,
           fontSize: 11, color: MUT, flexWrap: "wrap",
         }}>
-          <a href={`mailto:${P.bio.email}`} style={{ color: MUT, textDecoration: "none" }}>✉ {P.bio.email}</a>
+          <a className="link-anim" href={`mailto:${P.bio.email}`} style={{ color: MUT }}>✉ {P.bio.email}</a>
           <span style={{ color: MUT2 }}>|</span>
-          <a href={`https://${P.bio.linkedin}`} target="_blank" rel="noopener noreferrer" style={{ color: MUT, textDecoration: "none" }}>↗ {P.bio.linkedin}</a>
+          <a className="link-anim" href={`https://${P.bio.linkedin}`} target="_blank" rel="noopener noreferrer" style={{ color: MUT }}>↗ {P.bio.linkedin}</a>
+          <span style={{ color: MUT2 }}>|</span>
+          <a className="link-anim lk2" href="https://t.me/aloecastles" target="_blank" rel="noopener noreferrer" style={{ color: MUT }}>✈ t.me/aloecastles</a>
           <span style={{ color: MUT2 }}>|</span>
           <span>◉ {P.bio.location}</span>
         </div>
@@ -411,20 +560,20 @@ function TrophyCard({ p, i, compact }) {
 
       <div style={{
         height: compact ? 70 : 90,
-        background: `repeating-linear-gradient(45deg,oklch(0.28 0.08 ${p.hue}) 0 6px,oklch(0.20 0.08 ${p.hue}) 6px 12px)`,
+        background: `repeating-linear-gradient(45deg,oklch(var(--tile-l1) 0.08 ${p.hue}) 0 6px,oklch(var(--tile-l2) 0.08 ${p.hue}) 6px 12px)`,
         display: "flex", alignItems: "center", justifyContent: "center",
         position: "relative",
       }}>
         <div style={{
           fontFamily: MONO, fontSize: 9, color: BG, background: ACC,
-          padding: "2px 6px", letterSpacing: 1.5,
+          padding: "2px 6px", letterSpacing: 1.5, fontWeight: 700,
         }}>{p.id.toUpperCase()}</div>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 6, justifyContent: "center", minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
           <h3 style={{ margin: 0, fontSize: compact ? 18 : 22, fontWeight: 700, letterSpacing: -0.5 }}>
-            {p.title}
+            {p.title}<span className="trophy-arrow" style={{ color: ACC, marginLeft: 8, fontSize: compact ? 14 : 16, display: "inline-block" }}>↗</span>
           </h3>
           <span style={{ fontFamily: MONO, fontSize: 10, color: ACC, letterSpacing: 1.5 }}>
             ● {p.genre.toUpperCase()}
@@ -470,7 +619,7 @@ function NDABlock({ compact }) {
     <div style={{
       padding: compact ? 18 : 24,
       border: `1px dashed ${BRD2}`,
-      background: "linear-gradient(135deg,#100d1c 0%,#14102a 100%)",
+      background: "linear-gradient(135deg, var(--pnl) 0%, var(--pnl-hi) 100%)",
     }}>
       <div style={{ fontFamily: MONO, fontSize: 11, color: ACC, letterSpacing: 2, marginBottom: 12 }}>
         ▒ CLASSIFIED / NDA — {P.ndaProjects.length} ENTRIES · ACCESS RESTRICTED
@@ -701,20 +850,35 @@ function EduContact({ compact }) {
           </div>
           <div style={{ display: "grid", gap: 8 }}>
             {P.links.map((l) => (
-              <a key={l.label} href={l.url}
+              <a key={l.label} href={l.url} className="contact-row"
                  target={l.url.startsWith("http") ? "_blank" : undefined}
                  rel={l.url.startsWith("http") ? "noopener noreferrer" : undefined}
                  style={{
                    display: "flex", justifyContent: "space-between",
                    fontFamily: MONO, fontSize: 13, color: FG, textDecoration: "none",
                    border: `1px solid ${BRD2}`, padding: "10px 14px", background: BG,
+                   transition: "border-color .15s, background .15s, transform .15s",
                  }}>
                 <span><span style={{ color: ACC }}>▸</span> {l.label}</span>
-                <span style={{ color: MUT }}>
+                <span style={{ color: MUT, display: "flex", gap: 8, alignItems: "center" }}>
                   {l.url.replace(/^https?:\/\//, "").replace(/^mailto:/, "")}
+                  <span className="contact-arrow" style={{ color: ACC, opacity: 0.4, transition: "opacity .2s, transform .2s" }}>↗</span>
                 </span>
               </a>
             ))}
+            <a key="telegram" href="https://t.me/aloecastles" className="contact-row" target="_blank" rel="noopener noreferrer"
+               style={{
+                 display: "flex", justifyContent: "space-between",
+                 fontFamily: MONO, fontSize: 13, color: FG, textDecoration: "none",
+                 border: `1px solid ${BRD2}`, padding: "10px 14px", background: BG,
+                 transition: "border-color .15s, background .15s, transform .15s",
+               }}>
+              <span><span style={{ color: ACC2 }}>▸</span> Telegram</span>
+              <span style={{ color: MUT, display: "flex", gap: 8, alignItems: "center" }}>
+                t.me/aloecastles
+                <span className="contact-arrow" style={{ color: ACC2, opacity: 0.4, transition: "opacity .2s, transform .2s" }}>↗</span>
+              </span>
+            </a>
           </div>
         </div>
       </div>
@@ -741,25 +905,19 @@ function PromptEnd() {
   );
 }
 
-// ── density toggle ────────────────────────────────────────────────────────────
-function DensityToggle({ density, setDensity }) {
-  return (
-    <div className="dt">
-      <span className="dt-lbl">DENSITY</span>
-      <button className={`dt-btn${density === "compact" ? " on" : ""}`}
-              onClick={() => setDensity("compact")}>COMPACT</button>
-      <button className={`dt-btn${density === "comfortable" ? " on" : ""}`}
-              onClick={() => setDensity("comfortable")}>COMFY</button>
-    </div>
-  );
-}
-
 // ── root ──────────────────────────────────────────────────────────────────────
 function App() {
-  const [density, setDensity] = React.useState("compact");
-  const compact = density === "compact";
-  const pad = compact ? 28 : 48;
-  const gap = compact ? 32 : 48;
+  const detectMode = () =>
+    typeof window !== "undefined" && window.matchMedia("(max-width: 720px)").matches ? "mobile" : "pc";
+  const [mode, setMode]   = React.useState(detectMode);
+  const [theme, setTheme] = React.useState("dark");
+  const compact = mode === "mobile";
+  const pad = compact ? 20 : 48;
+  const gap = compact ? 28 : 48;
+
+  React.useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   return (
     <>
@@ -767,7 +925,7 @@ function App() {
         fontFamily: SANS, background: BG, color: FG,
         minHeight: "100%", width: "100%", padding: pad, boxSizing: "border-box",
       }}>
-        <NavBar />
+        <NavBar mode={mode} setMode={setMode} theme={theme} setTheme={setTheme} />
         <Hero compact={compact} />
         <div style={{ height: gap }} />
         <Legend />
@@ -789,7 +947,7 @@ function App() {
         <div style={{ height: gap }} />
         <PromptEnd />
       </div>
-      <DensityToggle density={density} setDensity={setDensity} />
+      <TelegramFab />
     </>
   );
 }
