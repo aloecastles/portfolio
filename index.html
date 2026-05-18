@@ -887,6 +887,36 @@ function EduContact({ compact }) {
   );
 }
 
+// ── version footer ────────────────────────────────────────────────────────────
+function VersionFooter() {
+  const [version, setVersion] = React.useState("");
+
+  React.useEffect(() => {
+    fetch("./version.json")
+      .then(r => r.json())
+      .then(data => {
+        const date = new Date(data.deployed);
+        const formatted = date.toLocaleString("en-US", {
+          year: "numeric", month: "2-digit", day: "2-digit",
+          hour: "2-digit", minute: "2-digit", second: "2-digit",
+          hour12: false
+        });
+        setVersion(formatted);
+      })
+      .catch(() => setVersion(""));
+  }, []);
+
+  return version ? (
+    <div style={{
+      fontFamily: MONO, fontSize: 10, color: MUT2, marginTop: 12,
+      paddingTop: 8, borderTop: `1px dashed ${BRD}`,
+      textAlign: "right",
+    }}>
+      ▌ DEPLOYED {version}
+    </div>
+  ) : null;
+}
+
 // ── blinking terminal cursor ──────────────────────────────────────────────────
 function PromptEnd() {
   return (
@@ -947,6 +977,7 @@ function App() {
         <EduContact compact={compact} />
         <div style={{ height: gap }} />
         <PromptEnd />
+        <VersionFooter />
       </div>
       <TelegramFab />
     </>
