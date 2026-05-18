@@ -10,28 +10,56 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@400;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
 <style>
   html, body, #root { min-height: 100%; }
-  body {
-    margin: 0;
-    font-family: 'Inter Tight', system-ui, sans-serif;
-    background: #0c0a14;
-    color: #e6e2f5;
-  }
+  body { margin: 0; font-family: 'Inter Tight', system-ui, sans-serif; background: #0c0a14; color: #e6e2f5; }
   * { box-sizing: border-box; }
   @keyframes blink { 50% { opacity: 0; } }
-
-  /* subtle scanline atmosphere */
+  html { scroll-behavior: smooth; }
+  a { color: inherit; }
   body::before {
-    content: "";
-    position: fixed; inset: 0; pointer-events: none; z-index: 1;
-    background: repeating-linear-gradient(
-      0deg,
-      rgba(178, 156, 255, 0.025) 0 1px,
-      transparent 1px 3px
-    );
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background: repeating-linear-gradient(0deg, rgba(178,156,255,0.025) 0 1px, transparent 1px 3px);
   }
   #root { position: relative; z-index: 2; }
 
-  a { color: inherit; }
+  /* density toggle */
+  .dt { position: fixed; bottom: 16px; right: 16px; z-index: 100; display: flex; align-items: center; gap: 6px;
+    background: rgba(16,13,28,0.92); border: 1px solid #1d1830; padding: 7px 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #6b6489;
+    backdrop-filter: blur(12px); letter-spacing: 1px; }
+  .dt-lbl { color: #6b6489; }
+  .dt-btn { background: none; border: 1px solid #2d2748; color: #6b6489; padding: 2px 8px;
+    font-family: inherit; font-size: 10px; cursor: pointer; letter-spacing: 1px; }
+  .dt-btn.on { border-color: #b29cff; color: #b29cff; }
+  .dt-btn:hover:not(.on) { border-color: #2d2748; color: #8c84a8; }
+
+  /* trophy card hover */
+  a.trophy-row { transition: border-color .15s, background .15s, transform .15s; }
+  a.trophy-row:hover { border-color: #b29cff; background: #14102a; }
+  a.trophy-row:focus-visible { outline: 2px solid #b29cff; outline-offset: 2px; }
+
+  /* publication card hover */
+  a.pub-card { transition: border-color .15s, background .15s; }
+  a.pub-card:hover { border-color: #5cf2a8; background: #14102a; }
+  a.pub-card:focus-visible { outline: 2px solid #5cf2a8; outline-offset: 2px; }
+
+  /* credential link */
+  .cred-link { color: #5cf2a8; text-decoration: none; border-bottom: 1px dashed #2d2748;
+    padding-bottom: 1px; transition: border-color .15s; }
+  .cred-link:hover { border-bottom-color: #5cf2a8; }
+
+  /* responsive */
+  @media (max-width: 640px) {
+    .hero-grid { grid-template-columns: 1fr !important; }
+    .trophy-row { grid-template-columns: 32px 64px minmax(0,1fr) !important; }
+    .trophy-plat { display: none !important; }
+    .skills-grid { grid-template-columns: 1fr !important; }
+    .exp-grid { grid-template-columns: 1fr !important; }
+    .exp-num { display: none !important; }
+    .edu-grid { grid-template-columns: 1fr !important; }
+  }
+  @media (max-width: 900px) {
+    .skills-grid { grid-template-columns: repeat(2,1fr) !important; }
+  }
 </style>
 </head>
 <body>
@@ -41,39 +69,727 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-<script src="data/projects.js"></script>
-<script type="text/babel" src="tweaks-panel.jsx"></script>
-<script type="text/babel" src="scenes/trophy-final.jsx"></script>
-
 <script type="text/babel">
-const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "density": "compact"
-}/*EDITMODE-END*/;
+// ── colour tokens ─────────────────────────────────────────────────────────────
+const ACC  = "#b29cff";
+const ACC2 = "#5cf2a8";
+const BG   = "#0c0a14";
+const PNL  = "#100d1c";
+const BRD  = "#1d1830";
+const BRD2 = "#2d2748";
+const FG   = "#e6e2f5";
+const MUT  = "#8c84a8";
+const MUT2 = "#6b6489";
+const MONO = "'JetBrains Mono', ui-monospace, monospace";
+const SANS = "'Inter Tight', 'Space Grotesk', sans-serif";
 
+// ── data ──────────────────────────────────────────────────────────────────────
+const P = {
+  bio: {
+    name:     "Oleksii Rohalskyi",
+    role:     "Game Production · PM · QA Leadership",
+    blurb:    "Game-industry PM and QA leader with 7+ yrs across QA, publishing coordination, and cross-platform delivery. Built the QA function from scratch at Pushka Studios, scaled the team 3× to 18+ people, and delivered every platform submission certified on the first attempt across PlayStation, Xbox, Switch, and Steam.",
+    email:    "o.rohalskiy@gmail.com",
+    linkedin: "linkedin.com/in/oleksiirohalskyi",
+    location: "EEST (UTC+3) · remote-friendly",
+  },
+  stats: [
+    { k: "7+",  v: "years in games" },
+    { k: "8+",  v: "named titles shipped" },
+    { k: "5+",  v: "NDA projects" },
+    { k: "1st", v: "submission cert pass" },
+    { k: "3×",  v: "team scaled (to 18+)" },
+    { k: "6",   v: "platforms covered" },
+  ],
+  platforms: ["PS5","PS4","XSX","XB1","Switch","PC","Steam Deck","Cloud","SteamVR","iOS","Android"],
+  achievements: [
+    "First-attempt platform certifications across PS / Xbox / Switch / Steam — no resubmissions, no delays.",
+    "Built QA function from scratch at Pushka Studios; scaled team 3× to 18+ specialists across parallel projects.",
+    "Owned Jira workspace with JQL dashboards + automation flows wired into Slack and TestRail/Testomat — real-time status for PMs and CEO with no noise.",
+    "Acted as publishing-side interface to external dev studios: request intake, expectation-setting, daily syncs, build reviews, delivery demos.",
+    "Defined technical QA protocols for gen8/gen9 stability, gamepad/UI adaptation, l10n, cross-platform & cross-network MP, achievements; drove PIX + RAZOR profiling.",
+    "Validated IAP / analytics / ad integrations on mobile LiveOps cycles; contributed A/B test interpretation to product decisions.",
+  ],
+  projects: [
+    { id:"plucky",    title:"The Plucky Squire",          year:2024, genre:"Platformer",    role:"Co-dev + porting + patching",            platforms:["PS5","XSX","Switch","PC"],        tech:["functional","porting","patching"],        hue:158, url:"https://store.steampowered.com/app/1627570/The_Plucky_Squire/",                                            store:"STEAM" },
+    { id:"flock",     title:"Flock",                      year:2024, genre:"Adventure",     role:"p2p EOS co-op · porting · patching",     platforms:["PS5","XSX","PC"],                 tech:["EOS co-op","porting","p2p"],             hue:188, url:"https://store.playstation.com/en-us/concept/10008437",                                                       store:"PS STORE" },
+    { id:"postal4",   title:"POSTAL 4: No Regerts",       year:2024, genre:"FPS",           role:"Porting · DualSense · upscalers",        platforms:["PS5","XSX","PC"],                 tech:["DualSense","FSR/DLSS","porting"],        hue:12,  url:"https://store.playstation.com/en-us/product/UP7876-PPSA09910_00-POSTAL4NOREGERTS",                            store:"PS STORE" },
+    { id:"spiderheck",title:"Spiderheck",                 year:2023, genre:"Brawler",       role:"p2p co-op · gyro+aim · single Joy-Con",  platforms:["PS5","PS4","XSX","XB1","Switch","PC"], tech:["EOS co-op","gyro aim","porting"],   hue:280, url:"https://store.steampowered.com/app/1329500/SpiderHeck/",                                                    store:"STEAM" },
+    { id:"filthy",    title:"Filthy Animals: Heist Sim",  year:2023, genre:"Heist co-op",  role:"Network p2p + VOIP · l10n · porting",    platforms:["PS5","XSX","Switch","PC"],        tech:["EOS p2p","VOIP","localization"],         hue:50,  url:"https://store.steampowered.com/app/1195420/Filthy_Animals__Heist_Simulator/",                                store:"STEAM" },
+    { id:"farworld",  title:"Farworld Pioneers",          year:2023, genre:"Sandbox",       role:"Porting · dedicated servers",            platforms:["PS5","XSX","PC"],                 tech:["dedicated servers","Win64","porting"],   hue:95,  url:"https://store.playstation.com/en-us/concept/10007173",                                                       store:"PS STORE" },
+    { id:"flashback2",title:"Flashback 2",                year:2023, genre:"Action",        role:"Porting · patching",                     platforms:["PS5","PS4","XSX","XB1","Switch","PC"], tech:["porting","patching"],               hue:320, url:"https://store.playstation.com/uk-ua/concept/10005443",                                                       store:"PS STORE" },
+    { id:"phantom",   title:"Phantom Abyss",              year:2023, genre:"FP Adventure",  role:"Async multiplayer · leaderboards",       platforms:["PS5","XSX","Switch","PC"],        tech:["async mp","leaderboards","porting"],     hue:220, url:"https://www.xbox.com/en-Us/games/store/phantom-abyss-game-preview/9nh9w1n1xwv5",                             store:"XBOX" },
+  ],
+  ndaProjects: [
+    { tag:"NDA-01", genre:"TPS action-adventure",          role:"functional · porting · optimization" },
+    { tag:"NDA-02", genre:"FPS/TPS survival looter-shooter",role:"co-dev · MP · GPU optim" },
+    { tag:"NDA-03", genre:"Turn-based board game",         role:"porting" },
+    { tag:"NDA-04", genre:"City builder sim",              role:"porting" },
+    { tag:"NDA-05", genre:"In-house vertical slice",       role:"co-dev QA" },
+  ],
+  experience: [
+    {
+      org:"playduck.tech (AffCatalog)", role:"Project Manager", period:"Mar 2026 – Apr 2026",
+      bullets:[
+        "Owned full delivery cycle on Scrum: sprint planning, task tracking, release prep.",
+        "Validated scope + estimates across QA, dev, and design workstreams.",
+        "Tracked API issues and migration tech debt ahead of commercial release.",
+      ],
+    },
+    {
+      org:"Codefather.Studio (ex-BG Games)", role:"PM / Operational Team Lead", period:"Oct 2025 – Feb 2026",
+      bullets:[
+        "Managed project pipelines across gamedev, Web3, blockchain-adjacent products.",
+        "Coordinated planning, task tracking, sprint reviews, iterative improvements.",
+        "Kept technical and business stakeholders aligned across teams.",
+      ],
+    },
+    {
+      org:"Casual Games / LiveOps (NDA)", role:"Senior QA — iOS/Android", period:"2025",
+      bullets:[
+        "Validated IAP, push notifications, ad integrations before each LiveOps update.",
+        "Analysed JSON + Logcat output to find integration-level issues.",
+        "Evaluated A/B test configs + analytics pipelines; contributed to product decisions.",
+        "Tested localisation across 14+ languages, WebView behaviour, cross-platform compat.",
+      ],
+    },
+    {
+      org:"Pushka Studios", role:"Lead QA / QA Manager", period:"2022 – 2025 · 2.5 yrs",
+      bullets:[
+        "Owned QA for UE/Unity titles on PC (Steam, EGS, winGDK, cloud), Xbox, PlayStation, Switch, Steam Deck.",
+        "Delivered first-attempt certs across all releases — no resubmissions, no delays.",
+        "Built QA from scratch; hired/onboarded/mentored team 3× growth to 18+ people.",
+        "Acted as publishing-side interface to external dev studios; standardized workflows across partner engagements.",
+        "Designed Jira workspace + JQL dashboards + Slack automation; wired in TestRail/Testomat.",
+        "Strategic planning + capacity forecasting in Scrumban; reallocated specialists across parallel projects.",
+      ],
+    },
+    {
+      org:"1+1 Media", role:"Head of QA & CX", period:"Apr 2021 – Jun 2022 · Kyiv",
+      bullets:[
+        "Led cross-platform OTT product (Web, Mobile, Smart TV, STB); managed QA & CX team up to 6.",
+        "Set up release pipelines + reporting; reduced regressions and gave leadership predictable delivery-risk visibility.",
+      ],
+    },
+    {
+      org:"VOLIA", role:"QA / CX Specialist", period:"2016 – 2019 · Kyiv region",
+      bullets:[
+        "Multi-platform OTT app QC (Web, Mobile, TV, STB).",
+        "Technical consulting + customer-experience research.",
+      ],
+    },
+  ],
+  skills: {
+    "Production": [
+      "Backlog + roadmap ownership",
+      "Sprint planning · Scrum / Kanban",
+      "Capacity forecasting",
+      "Risk identification + mitigation",
+      "Milestone + build review cycles",
+      "Stakeholder reporting + dashboards",
+      "Budgets, timelines, deliverables",
+      "External partner studio coordination",
+      "Platform certification + store submissions",
+      "LiveOps + post-launch ops",
+    ],
+    "Tech / Tools": [
+      "Jira (JQL · workspace admin · automation)",
+      "Confluence · Notion · Miro",
+      "TestRail · Testomat",
+      "Slack workflows + integrations",
+      "Git basics",
+      "Fiddler — network emulation",
+      "Unity / Unreal Editor",
+      "PIX · RAZOR profilers",
+      "UE console + launch params",
+      "Win64 dedicated servers",
+    ],
+    "Platforms / SDKs": [
+      "PlayStation devkits (PS4 / PS5)",
+      "Xbox devkits (XB1 / XSX · winGDK)",
+      "Nintendo Switch devkit",
+      "Steam Deck devkit",
+      "Steam · EGS · cloud gaming",
+      "iOS / Android (LiveOps)",
+      "SteamVR + Valve Index",
+      "Cross-platform & cross-network MP",
+      "Achievements design · localization",
+    ],
+    "Leadership": [
+      "Hiring · interviewing · onboarding",
+      "Mentoring · perf reviews (≤18 ppl)",
+      "Resource allocation",
+      "Conflict resolution",
+      "Cross-functional coordination",
+      "External partner alignment",
+      "Strategic planning + scheduling",
+      "Team capacity prediction",
+      "Standardizing partner workflows",
+    ],
+  },
+  education: [
+    { title:"B.S. Computer Science",      org:"National Aviation University, Ukraine",  year:"2019" },
+    { title:"Project Management course",  org:"IAMPM (PMBOK fundamentals, Agile delivery)", year:"2025",
+      credential:{ id:"132091450", url:"https://courses.iampm.club/certificate/132091450.png" } },
+  ],
+  publications: [
+    {
+      title: "QA in GameDev. How to: build outsource processes, hire right people, successfully release projects",
+      venue: "GGC Bratislava '23",
+      lang:  "EN",
+      kind:  "Conference talk",
+      url:   "https://youtu.be/ZgT-UskK5HY",
+    },
+    {
+      title: "QA in GameDev. Як побудувати процеси, найняти правильних людей та успішно релізити проєкти",
+      venue: "Games Gathering",
+      lang:  "UA",
+      kind:  "Conference talk",
+      url:   "https://youtu.be/NAzWr1Dab1E?list=LL",
+    },
+    {
+      title: "Вебінар «Game Testing: Особливості тестування ігор»",
+      venue: "Webinar",
+      lang:  "UA",
+      kind:  "Webinar",
+      url:   "https://youtu.be/jrl3Z9c7UPs",
+    },
+    {
+      title: "Менторство у геймдеві: QA",
+      venue: "DOU gamedev",
+      lang:  "UA",
+      kind:  "Panel talk",
+      url:   "https://youtu.be/OTvIJ4N-myc?t=1614",
+    },
+    {
+      title: "Правила керівників команд перевірені часом, від QA та геймдеву до NASA програм",
+      venue: "GGC Lviv 2024",
+      lang:  "UA",
+      kind:  "Conference talk",
+      url:   "https://youtu.be/D8DYhe16FLo",
+    },
+  ],
+  links: [
+    { label:"GitHub",   url:"https://github.com/aloecastles" },
+    { label:"LinkedIn", url:"https://linkedin.com/in/oleksiirohalskyi" },
+    { label:"Email",    url:"mailto:o.rohalskiy@gmail.com" },
+    { label:"Blog",     url:"https://www.linkedin.com/in/oleksiirohalskyi/recent-activity/all/" },
+  ],
+};
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+const pad2 = (n) => String(n).padStart(2, "0");
+
+function SectionHeader({ cmd, sub }) {
+  return (
+    <div style={{
+      fontFamily: MONO, fontSize: 12, color: MUT2, letterSpacing: 1,
+      marginBottom: 12, display: "flex", gap: 14, alignItems: "baseline", flexWrap: "wrap",
+    }}>
+      <span style={{ color: ACC2 }}>{cmd}</span>
+      {sub && <span style={{ color: MUT2 }}>{sub}</span>}
+    </div>
+  );
+}
+
+// ── nav ───────────────────────────────────────────────────────────────────────
+const navLinkSt = { color: MUT2, textDecoration: "none" };
+
+function NavBar() {
+  return (
+    <div style={{
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      fontFamily: MONO, fontSize: 11, color: MUT2, letterSpacing: 1.5,
+      borderBottom: `1px solid ${BRD}`, paddingBottom: 12, marginBottom: 28,
+      flexWrap: "wrap", gap: 12,
+    }}>
+      <span style={{ color: ACC }}>★ TROPHY CASE / GAMEDEV-PM</span>
+      <span style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
+        <a href="#projects" style={navLinkSt}>PROJECTS</a>
+        <a href="#experience" style={navLinkSt}>EXPERIENCE</a>
+        <a href="#skills" style={navLinkSt}>SKILLS</a>
+        <a href="#publications" style={navLinkSt}>PUBLICATIONS</a>
+        <a href="#contact" style={navLinkSt}>CONTACT</a>
+        <span style={{ color: ACC2 }}>● ONLINE</span>
+      </span>
+    </div>
+  );
+}
+
+// ── hero ──────────────────────────────────────────────────────────────────────
+function Hero({ compact }) {
+  return (
+    <div className="hero-grid" style={{
+      display: "grid",
+      gridTemplateColumns: "minmax(0,1.2fr) minmax(0,1fr)",
+      gap: 28, alignItems: "end",
+    }}>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontFamily: MONO, fontSize: 11, color: ACC, letterSpacing: 3, marginBottom: 10 }}>
+          ▌ PROFILE_LOAD :: OK
+        </div>
+        <h1 style={{
+          fontSize: compact ? 56 : 80, lineHeight: 0.9, margin: 0, fontWeight: 800,
+          letterSpacing: -3,
+        }}>{P.bio.name}.</h1>
+        <div style={{ fontFamily: MONO, fontSize: 12, color: ACC2, letterSpacing: 2, marginTop: 14 }}>
+          ◆ {P.bio.role.toUpperCase()}
+        </div>
+        <div style={{ color: MUT, marginTop: 12, maxWidth: 620, fontSize: 14, lineHeight: 1.55 }}>
+          {P.bio.blurb}
+        </div>
+        <div style={{
+          display: "flex", gap: 12, marginTop: 16, fontFamily: MONO,
+          fontSize: 11, color: MUT, flexWrap: "wrap",
+        }}>
+          <a href={`mailto:${P.bio.email}`} style={{ color: MUT, textDecoration: "none" }}>✉ {P.bio.email}</a>
+          <span style={{ color: MUT2 }}>|</span>
+          <a href={`https://${P.bio.linkedin}`} target="_blank" rel="noopener noreferrer" style={{ color: MUT, textDecoration: "none" }}>↗ {P.bio.linkedin}</a>
+          <span style={{ color: MUT2 }}>|</span>
+          <span>◉ {P.bio.location}</span>
+        </div>
+      </div>
+
+      <div style={{
+        display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 1,
+        background: BRD, border: `1px solid ${BRD}`, alignSelf: "stretch",
+      }}>
+        {P.stats.map((s) => (
+          <div key={s.v} style={{
+            background: PNL, padding: compact ? 14 : 20,
+            display: "flex", flexDirection: "column", justifyContent: "space-between",
+            minHeight: 92,
+          }}>
+            <span style={{ fontFamily: MONO, fontSize: 10, color: MUT2, letterSpacing: 1.5 }}>
+              {s.v.toUpperCase()}
+            </span>
+            <span style={{ fontSize: compact ? 28 : 40, fontWeight: 800, color: ACC, letterSpacing: -1.5, lineHeight: 1 }}>
+              {s.k}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── legend + trophy list ──────────────────────────────────────────────────────
+function Legend() {
+  return (
+    <div id="projects" style={{
+      display: "flex", gap: 22, fontFamily: MONO, fontSize: 11, color: MUT2,
+      letterSpacing: 1.5, borderTop: `1px solid ${BRD}`, borderBottom: `1px solid ${BRD}`,
+      padding: "10px 0", marginBottom: 18, flexWrap: "wrap",
+    }}>
+      <span>★ TITLE</span>
+      <span>● GENRE</span>
+      <span>▤ PLATFORMS</span>
+      <span>◆ ROLE</span>
+      <span>⚒ TECH</span>
+      <span style={{ marginLeft: "auto", color: ACC }}>
+        ▌ {P.projects.length} RELEASED · {P.ndaProjects.length} NDA
+      </span>
+    </div>
+  );
+}
+
+function TrophyCard({ p, i, compact }) {
+  return (
+    <a className="trophy-row" href={p.url} target="_blank" rel="noopener noreferrer"
+       aria-label={`${p.title} — open on ${p.store}`}
+       style={{
+         display: "grid",
+         gridTemplateColumns: compact ? "44px 100px minmax(0,1fr) auto" : "56px 130px minmax(0,1fr) auto",
+         gap: compact ? 14 : 20, alignItems: "stretch",
+         background: PNL, border: `1px solid ${BRD}`, padding: compact ? 12 : 16,
+         color: FG, textDecoration: "none",
+       }}>
+      <div style={{
+        fontFamily: MONO, fontSize: compact ? 28 : 36, fontWeight: 800,
+        color: MUT2, letterSpacing: -2, alignSelf: "center", lineHeight: 1,
+      }}>{pad2(i + 1)}</div>
+
+      <div style={{
+        height: compact ? 70 : 90,
+        background: `repeating-linear-gradient(45deg,oklch(0.28 0.08 ${p.hue}) 0 6px,oklch(0.20 0.08 ${p.hue}) 6px 12px)`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        position: "relative",
+      }}>
+        <div style={{
+          fontFamily: MONO, fontSize: 9, color: BG, background: ACC,
+          padding: "2px 6px", letterSpacing: 1.5,
+        }}>{p.id.toUpperCase()}</div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, justifyContent: "center", minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+          <h3 style={{ margin: 0, fontSize: compact ? 18 : 22, fontWeight: 700, letterSpacing: -0.5 }}>
+            {p.title}
+          </h3>
+          <span style={{ fontFamily: MONO, fontSize: 10, color: ACC, letterSpacing: 1.5 }}>
+            ● {p.genre.toUpperCase()}
+          </span>
+          <span style={{ fontSize: 11, color: MUT2, fontFamily: MONO }}>{p.year}</span>
+        </div>
+        <div style={{ fontSize: 12, color: MUT }}>◆ {p.role}</div>
+        <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+          {p.tech.map((t) => (
+            <span key={t} style={{
+              fontFamily: MONO, fontSize: 9, border: `1px solid ${BRD2}`,
+              color: ACC, padding: "2px 6px", letterSpacing: 1,
+            }}>⚒ {t}</span>
+          ))}
+        </div>
+      </div>
+
+      <div className="trophy-plat" style={{
+        display: "flex", flexDirection: "column", gap: 3, alignItems: "flex-end",
+        fontFamily: MONO, fontSize: 10, color: MUT, letterSpacing: 1,
+        alignSelf: "center", minWidth: 78,
+      }}>
+        {p.platforms.map((pl) => <span key={pl}>▤ {pl}</span>)}
+        <span className="trophy-store" style={{
+          color: ACC2, marginTop: 4, fontSize: 9, letterSpacing: 1.5,
+        }}>↗ {p.store}</span>
+      </div>
+    </a>
+  );
+}
+
+function TrophyList({ compact }) {
+  return (
+    <div style={{ display: "grid", gap: compact ? 10 : 14 }}>
+      {P.projects.map((p, i) => <TrophyCard key={p.id} p={p} i={i} compact={compact} />)}
+    </div>
+  );
+}
+
+// ── NDA block ─────────────────────────────────────────────────────────────────
+function NDABlock({ compact }) {
+  return (
+    <div style={{
+      padding: compact ? 18 : 24,
+      border: `1px dashed ${BRD2}`,
+      background: "linear-gradient(135deg,#100d1c 0%,#14102a 100%)",
+    }}>
+      <div style={{ fontFamily: MONO, fontSize: 11, color: ACC, letterSpacing: 2, marginBottom: 12 }}>
+        ▒ CLASSIFIED / NDA — {P.ndaProjects.length} ENTRIES · ACCESS RESTRICTED
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 8 }}>
+        {P.ndaProjects.map((n) => (
+          <div key={n.tag} style={{ border: `1px solid ${BRD2}`, padding: "10px 12px", background: BG }}>
+            <div style={{ fontFamily: MONO, fontSize: 10, color: ACC, letterSpacing: 1.5, marginBottom: 4 }}>
+              {n.tag}&nbsp; <span style={{ color: MUT2 }}>░░░░░░</span>
+            </div>
+            <div style={{ fontSize: 13, color: FG }}>{n.genre}</div>
+            <div style={{ fontSize: 11, color: MUT, marginTop: 2 }}>{n.role}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── experience timeline ───────────────────────────────────────────────────────
+function ExperienceTimeline({ compact }) {
+  return (
+    <div id="experience">
+      <SectionHeader cmd="$ cat ./experience.log" sub="// 7+ yrs · games · OTT · LiveOps" />
+      <div style={{ display: "grid", gap: compact ? 10 : 14 }}>
+        {P.experience.map((e, i) => (
+          <div key={e.org} className="exp-grid" style={{
+            display: "grid",
+            gridTemplateColumns: compact ? "56px minmax(0,1fr)" : "72px minmax(0,1fr)",
+            gap: compact ? 14 : 20,
+            background: PNL, border: `1px solid ${BRD}`, padding: compact ? 14 : 18,
+          }}>
+            <div className="exp-num" style={{
+              fontFamily: MONO, fontSize: compact ? 11 : 12,
+              color: ACC2, letterSpacing: 1.5, lineHeight: 1.4,
+            }}>
+              <div style={{ color: MUT2, fontSize: 10 }}>JOB</div>
+              <div style={{ fontSize: compact ? 22 : 26, color: ACC, fontWeight: 800, marginTop: 4 }}>
+                {pad2(P.experience.length - i)}
+              </div>
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "baseline", flexWrap: "wrap" }}>
+                <h3 style={{ margin: 0, fontSize: compact ? 17 : 20, fontWeight: 700, letterSpacing: -0.3 }}>
+                  {e.role}
+                </h3>
+                <span style={{ fontFamily: MONO, fontSize: 11, color: ACC, letterSpacing: 1.2 }}>
+                  @ {e.org}
+                </span>
+                <span style={{ fontFamily: MONO, fontSize: 10, color: MUT2, marginLeft: "auto" }}>
+                  {e.period}
+                </span>
+              </div>
+              <ul style={{ margin: "10px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 4 }}>
+                {e.bullets.map((b, j) => (
+                  <li key={j} style={{ fontSize: 12.5, color: MUT, lineHeight: 1.5 }}>
+                    <span style={{ color: ACC2 }}>▸</span> {b}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── key achievements ──────────────────────────────────────────────────────────
+function KeyAchievements({ compact }) {
+  return (
+    <div>
+      <SectionHeader cmd="$ ./run --report achievements" sub={`// ${P.achievements.length} highlights`} />
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+        gap: compact ? 8 : 10,
+      }}>
+        {P.achievements.map((a, i) => (
+          <div key={i} style={{
+            background: PNL, border: `1px solid ${BRD}`,
+            padding: compact ? 14 : 18, display: "flex", gap: 12,
+          }}>
+            <div style={{
+              fontFamily: MONO, fontSize: 22, fontWeight: 800, color: ACC,
+              letterSpacing: -1, lineHeight: 1, flexShrink: 0,
+            }}>{pad2(i + 1)}</div>
+            <div style={{ fontSize: 12.5, color: FG, lineHeight: 1.5 }}>{a}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── platforms report ──────────────────────────────────────────────────────────
+function PlatformsReport() {
+  return (
+    <div>
+      <SectionHeader cmd="$ ./run --report platforms" sub={`// ${P.platforms.length} targets`} />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {P.platforms.map((pl) => (
+          <span key={pl} style={{
+            fontFamily: MONO, border: `1px solid ${BRD2}`, padding: "5px 10px",
+            color: FG, fontSize: 12, letterSpacing: 0.5, background: PNL,
+          }}>▤ {pl}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── skills dump ───────────────────────────────────────────────────────────────
+function SkillsDump({ compact }) {
+  const cats = Object.keys(P.skills);
+  return (
+    <div id="skills">
+      <SectionHeader cmd="$ cat ./skills.txt" sub={`// ${cats.length} domains`} />
+      <div className="skills-grid" style={{
+        display: "grid",
+        gridTemplateColumns: compact ? "repeat(2,1fr)" : "repeat(4,1fr)",
+        gap: 1, background: BRD, border: `1px solid ${BRD}`,
+      }}>
+        {cats.map((cat) => (
+          <div key={cat} style={{ background: PNL, padding: compact ? 14 : 18 }}>
+            <div style={{ fontFamily: MONO, fontSize: 11, color: ACC2, letterSpacing: 2, marginBottom: 10 }}>
+              // {cat.toUpperCase()}
+            </div>
+            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 4 }}>
+              {P.skills[cat].map((s) => (
+                <li key={s} style={{ fontSize: 11.5, color: FG, fontFamily: MONO, lineHeight: 1.5 }}>
+                  <span style={{ color: MUT2 }}>·</span> {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── publications ──────────────────────────────────────────────────────────────
+function Publications({ compact }) {
+  return (
+    <div id="publications">
+      <SectionHeader cmd="$ cat ./publications.log" sub={`// ${P.publications.length} talks · articles`} />
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
+        gap: compact ? 8 : 10,
+      }}>
+        {P.publications.map((pub, i) => {
+          const isYT = /youtu\.?be/.test(pub.url);
+          return (
+            <a key={i} href={pub.url} target="_blank" rel="noopener noreferrer"
+               className="pub-card"
+               style={{
+                 background: PNL, border: `1px solid ${BRD}`, padding: compact ? 14 : 16,
+                 display: "flex", flexDirection: "column", gap: 8,
+                 color: FG, textDecoration: "none",
+               }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <span style={{
+                  fontFamily: MONO, fontSize: 9, color: BG, background: ACC2,
+                  padding: "2px 6px", letterSpacing: 1.5,
+                }}>{isYT ? "▶ WATCH" : "↗ READ"}</span>
+                <span style={{ fontFamily: MONO, fontSize: 10, color: ACC, letterSpacing: 1.5 }}>
+                  ● {pub.kind.toUpperCase()}
+                </span>
+                <span style={{ fontFamily: MONO, fontSize: 10, color: MUT2, letterSpacing: 1.5 }}>
+                  [{pub.lang}]
+                </span>
+              </div>
+              <div style={{ fontSize: 13.5, color: FG, fontWeight: 600, lineHeight: 1.4 }}>
+                {pub.title}
+              </div>
+              <div style={{ fontFamily: MONO, fontSize: 11, color: MUT, marginTop: "auto" }}>
+                @ {pub.venue}
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── education + contact ───────────────────────────────────────────────────────
+function EduContact({ compact }) {
+  return (
+    <div id="contact" className="edu-grid" style={{
+      display: "grid",
+      gridTemplateColumns: compact ? "1fr" : "1fr 1fr",
+      gap: compact ? 16 : 24,
+    }}>
+      <div>
+        <SectionHeader cmd="$ cat ./education.txt" />
+        <div style={{ display: "grid", gap: 8 }}>
+          {P.education.map((e) => (
+            <div key={e.title} style={{
+              background: PNL, border: `1px solid ${BRD}`, padding: "12px 14px",
+            }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: FG }}>{e.title}</div>
+              <div style={{ fontSize: 12, color: MUT, marginTop: 2 }}>{e.org}</div>
+              <div style={{
+                fontFamily: MONO, fontSize: 10, marginTop: 4,
+                display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap",
+              }}>
+                <span style={{ color: ACC }}>● {e.year}</span>
+                {e.credential && (
+                  <a className="cred-link" href={e.credential.url}
+                     target="_blank" rel="noopener noreferrer">
+                    ↗ Credential ID {e.credential.id}
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader cmd="$ ./contact --connect" />
+        <div style={{ background: PNL, border: `1px solid ${BRD}`, padding: 18 }}>
+          <div style={{ fontFamily: MONO, fontSize: 11, color: MUT2, letterSpacing: 1.5, marginBottom: 12 }}>
+            // ESTABLISH_LINK
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {P.links.map((l) => (
+              <a key={l.label} href={l.url}
+                 target={l.url.startsWith("http") ? "_blank" : undefined}
+                 rel={l.url.startsWith("http") ? "noopener noreferrer" : undefined}
+                 style={{
+                   display: "flex", justifyContent: "space-between",
+                   fontFamily: MONO, fontSize: 13, color: FG, textDecoration: "none",
+                   border: `1px solid ${BRD2}`, padding: "10px 14px", background: BG,
+                 }}>
+                <span><span style={{ color: ACC }}>▸</span> {l.label}</span>
+                <span style={{ color: MUT }}>
+                  {l.url.replace(/^https?:\/\//, "").replace(/^mailto:/, "")}
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── blinking terminal cursor ──────────────────────────────────────────────────
+function PromptEnd() {
+  return (
+    <div style={{
+      fontFamily: MONO, fontSize: 13, color: MUT2,
+      paddingTop: 12, borderTop: `1px dashed ${BRD}`,
+    }}>
+      <span style={{ color: ACC2 }}>oleksii@gamedev</span>
+      <span>:</span>
+      <span style={{ color: ACC }}>~/portfolio</span>
+      <span>$ </span>
+      <span style={{
+        display: "inline-block", width: 9, height: 14, background: ACC2,
+        verticalAlign: "-2px", animation: "blink 1s steps(2) infinite",
+      }} />
+    </div>
+  );
+}
+
+// ── density toggle ────────────────────────────────────────────────────────────
+function DensityToggle({ density, setDensity }) {
+  return (
+    <div className="dt">
+      <span className="dt-lbl">DENSITY</span>
+      <button className={`dt-btn${density === "compact" ? " on" : ""}`}
+              onClick={() => setDensity("compact")}>COMPACT</button>
+      <button className={`dt-btn${density === "comfortable" ? " on" : ""}`}
+              onClick={() => setDensity("comfortable")}>COMFY</button>
+    </div>
+  );
+}
+
+// ── root ──────────────────────────────────────────────────────────────────────
 function App() {
-  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [density, setDensity] = React.useState("compact");
+  const compact = density === "compact";
+  const pad = compact ? 28 : 48;
+  const gap = compact ? 32 : 48;
+
   return (
     <>
-      <TrophyFinal density={tweaks.density} />
-      <TweaksPanel title="Tweaks">
-        <TweakSection title="Layout">
-          <TweakRadio
-            label="Density"
-            value={tweaks.density}
-            options={[
-              { value: "compact", label: "Compact" },
-              { value: "comfortable", label: "Comfy" },
-            ]}
-            onChange={(v) => setTweak("density", v)}
-          />
-        </TweakSection>
-        <TweakSection title="About">
-          <div style={{ fontSize: 12, color: "#9aa0a6", lineHeight: 1.5 }}>
-            Final trophy-case portfolio. Drop this into a GitHub Pages repo
-            (rename to <code>index.html</code>) and you're live.
-          </div>
-        </TweakSection>
-      </TweaksPanel>
+      <div style={{
+        fontFamily: SANS, background: BG, color: FG,
+        minHeight: "100%", width: "100%", padding: pad, boxSizing: "border-box",
+      }}>
+        <NavBar />
+        <Hero compact={compact} />
+        <div style={{ height: gap }} />
+        <Legend />
+        <TrophyList compact={compact} />
+        <div style={{ height: gap }} />
+        <NDABlock compact={compact} />
+        <div style={{ height: gap }} />
+        <ExperienceTimeline compact={compact} />
+        <div style={{ height: gap }} />
+        <KeyAchievements compact={compact} />
+        <div style={{ height: gap }} />
+        <PlatformsReport />
+        <div style={{ height: gap }} />
+        <SkillsDump compact={compact} />
+        <div style={{ height: gap }} />
+        <Publications compact={compact} />
+        <div style={{ height: gap }} />
+        <EduContact compact={compact} />
+        <div style={{ height: gap }} />
+        <PromptEnd />
+      </div>
+      <DensityToggle density={density} setDensity={setDensity} />
     </>
   );
 }
