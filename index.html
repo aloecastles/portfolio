@@ -193,6 +193,9 @@
     .exp-num { display: none !important; }
     .edu-grid { grid-template-columns: 1fr !important; }
     .contact-row { flex-direction: column !important; gap: 6px !important; }
+    .cv-fab { width: 64px; height: 64px; bottom: 28px; right: 12px; }
+    .cv-fab svg { width: 30px; height: 30px; }
+    .cv-fab .cv-label { display: none; }
     .toolbar { font-size: 10px; }
   }
   @media (max-width: 900px) {
@@ -1182,6 +1185,7 @@ function App() {
         <PromptEnd />
         <VersionFooter />
       </div>
+      <CVDownloadFab />
     </>
   );
 }
