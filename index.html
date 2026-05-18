@@ -209,7 +209,7 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script type="text/babel">
 // ── colour tokens (theme-aware via CSS vars) ─────────────────────────────────
@@ -478,139 +478,178 @@ function TelegramFab() {
   );
 }
 
-// ── CV PDF generation ─────────────────────────────────────────────────────────
-function escapeHtml(s) {
+// ── CV PDF generation (one-page, ATS-friendly, selectable text) ──────────────
+function sanitizeForATS(s) {
   return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function buildCVHtml() {
-  const today = new Date().toISOString().slice(0, 10);
-
-  const sectionStyle = `color:#5a3ddc;font-size:12pt;font-weight:700;letter-spacing:0.5px;border-bottom:1.2px solid #5a3ddc;padding-bottom:3px;margin:14px 0 8px 0;text-transform:uppercase;`;
-  const catStyle = `color:#1a8f5a;font-size:10pt;font-weight:700;margin:0 0 3px 0;`;
-  const bodyStyle = `font-size:9.5pt;line-height:1.5;color:#1a1828;margin:0 0 4px 0;`;
-  const mutedStyle = `font-size:9pt;color:#555;margin:0 0 3px 0;`;
-  const jobTitleStyle = `font-size:10pt;font-weight:700;color:#1a1828;margin:0;`;
-  const ulStyle = `margin:4px 0 8px 0;padding-left:18px;font-size:9.5pt;line-height:1.5;color:#1a1828;`;
-
-  const expHtml = P.experience.map(e => `
-    <div style="margin-bottom:8px;page-break-inside:avoid;">
-      <div style="${jobTitleStyle}">${escapeHtml(e.role)} <span style="color:#5a3ddc;font-weight:600;">@ ${escapeHtml(e.org)}</span></div>
-      <div style="font-size:8.5pt;color:#777;font-style:italic;margin:1px 0 3px 0;">${escapeHtml(e.period)}</div>
-      <ul style="${ulStyle}">
-        ${e.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join("")}
-      </ul>
-    </div>
-  `).join("");
-
-  const achHtml = `<ul style="${ulStyle}">${P.achievements.map(a => `<li>${escapeHtml(a)}</li>`).join("")}</ul>`;
-
-  const skillsHtml = Object.keys(P.skills).map(cat => `
-    <div style="margin-bottom:6px;page-break-inside:avoid;">
-      <div style="${catStyle}">${escapeHtml(cat)}</div>
-      <div style="${bodyStyle}">${P.skills[cat].map(escapeHtml).join(" · ")}</div>
-    </div>
-  `).join("");
-
-  const projHtml = P.projects.map(p => `
-    <div style="margin-bottom:5px;page-break-inside:avoid;">
-      <div style="${jobTitleStyle}">${escapeHtml(p.title)} <span style="color:#777;font-weight:400;">(${p.year}) — ${escapeHtml(p.genre)}</span></div>
-      <div style="${mutedStyle}">Role: ${escapeHtml(p.role)} · Platforms: ${p.platforms.map(escapeHtml).join(", ")}</div>
-    </div>
-  `).join("");
-
-  const ndaHtml = `<ul style="${ulStyle}">${P.ndaProjects.map(n => `<li><strong>${escapeHtml(n.tag)}</strong> — ${escapeHtml(n.genre)} <span style="color:#777;">(${escapeHtml(n.role)})</span></li>`).join("")}</ul>`;
-
-  const eduHtml = P.education.map(e => `
-    <div style="margin-bottom:5px;page-break-inside:avoid;">
-      <div style="${jobTitleStyle}">${escapeHtml(e.title)}</div>
-      <div style="${mutedStyle}">${escapeHtml(e.org)} · ${escapeHtml(e.year)}${e.credential ? ` · Credential ID ${escapeHtml(e.credential.id)}` : ""}</div>
-    </div>
-  `).join("");
-
-  const pubHtml = `<ul style="${ulStyle}">${P.publications.map(pub => `<li><span style="color:#5a3ddc;font-weight:600;">[${escapeHtml(pub.lang)}]</span> ${escapeHtml(pub.title)} — <em>${escapeHtml(pub.venue)}</em> (${escapeHtml(pub.kind)})</li>`).join("")}</ul>`;
-
-  const statsHtml = `<ul style="${ulStyle}">${P.stats.map(s => `<li><strong>${escapeHtml(s.k)}</strong> — ${escapeHtml(s.v)}</li>`).join("")}</ul>`;
-
-  return `
-    <div style="font-family:'Helvetica Neue',Arial,'Segoe UI',sans-serif;color:#1a1828;padding:18mm 16mm;width:210mm;box-sizing:border-box;background:#ffffff;">
-      <h1 style="font-size:24pt;margin:0;color:#1a1828;font-weight:800;letter-spacing:-0.5px;">${escapeHtml(P.bio.name)}</h1>
-      <div style="font-size:11.5pt;color:#5a3ddc;margin:4px 0 4px 0;font-weight:600;">${escapeHtml(P.bio.role)}</div>
-      <div style="font-size:9pt;color:#555;padding-bottom:6px;border-bottom:1px solid #ccc;">
-        ${escapeHtml(P.bio.email)} &nbsp;|&nbsp; ${escapeHtml(P.bio.linkedin)} &nbsp;|&nbsp; t.me/aloecastles &nbsp;|&nbsp; ${escapeHtml(P.bio.location)}
-      </div>
-
-      <div style="${sectionStyle}">Summary</div>
-      <div style="${bodyStyle}">${escapeHtml(P.bio.blurb)}</div>
-
-      <div style="${sectionStyle}">Highlights</div>
-      ${statsHtml}
-
-      <div style="${sectionStyle}">Experience</div>
-      ${expHtml}
-
-      <div style="${sectionStyle}">Key Achievements</div>
-      ${achHtml}
-
-      <div style="${sectionStyle}">Skills</div>
-      ${skillsHtml}
-
-      <div style="${sectionStyle}">Platforms</div>
-      <div style="${bodyStyle}">${P.platforms.map(escapeHtml).join(" · ")}</div>
-
-      <div style="${sectionStyle}">Shipped Titles</div>
-      ${projHtml}
-
-      <div style="${sectionStyle}">NDA Projects</div>
-      ${ndaHtml}
-
-      <div style="${sectionStyle}">Education</div>
-      ${eduHtml}
-
-      <div style="${sectionStyle}">Publications & Talks</div>
-      ${pubHtml}
-
-      <div style="font-size:7.5pt;color:#888;margin-top:12px;border-top:1px solid #ddd;padding-top:6px;text-align:right;">
-        Generated ${today}
-      </div>
-    </div>
-  `;
+    .replace(/≤/g, "<=")
+    .replace(/≥/g, ">=")
+    .replace(/·/g, "|")
+    .replace(/—/g, "-")
+    .replace(/–/g, "-")
+    .replace(/×/g, "x")
+    .replace(/[‘’‚‛]/g, "'")
+    .replace(/[“”„‟]/g, '"')
+    .replace(/[•●◦▪▫]/g, "-")
+    .replace(/[Ѐ-ӿԀ-ԯ]+/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function generateCVPDF() {
-  if (!window.html2pdf) {
+  if (!window.jspdf) {
     alert("PDF library still loading, please try again in a moment.");
     return;
   }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "mm", format: "a4", compress: true });
 
-  const today = new Date().toISOString().slice(0, 10);
-  const container = document.createElement("div");
-  container.innerHTML = buildCVHtml();
-  container.style.position = "fixed";
-  container.style.left = "-99999px";
-  container.style.top = "0";
-  document.body.appendChild(container);
+  const PAGE_W = 210;
+  const PAGE_H = 297;
+  const MARGIN = 11;
+  const CONTENT_W = PAGE_W - MARGIN * 2;
+  let y = MARGIN;
 
-  const opt = {
-    margin: 0,
-    filename: `Oleksii_Rohalskyi_CV_${today}.pdf`,
-    image: { type: "jpeg", quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
-    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    pagebreak: { mode: ["css", "legacy"], avoid: "li, div" },
+  const TEXT = [20, 20, 30];
+  const MUTED = [110, 110, 130];
+  const ACCENT = [70, 50, 180];
+
+  const clean = sanitizeForATS;
+
+  const section = (title) => {
+    y += 1.5;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...ACCENT);
+    doc.text(title.toUpperCase(), MARGIN, y);
+    doc.setDrawColor(...ACCENT);
+    doc.setLineWidth(0.25);
+    doc.line(MARGIN, y + 0.8, MARGIN + CONTENT_W, y + 0.8);
+    y += 3.5;
+    doc.setTextColor(...TEXT);
   };
 
-  window.html2pdf().set(opt).from(container.firstElementChild).save().then(() => {
-    document.body.removeChild(container);
-  }).catch((err) => {
-    console.error("PDF generation failed:", err);
-    document.body.removeChild(container);
+  const body = (text, opts = {}) => {
+    const { size = 8, font = "normal", color = TEXT, indent = 0, gap = 3.2 } = opts;
+    doc.setFont("helvetica", font);
+    doc.setFontSize(size);
+    doc.setTextColor(...color);
+    const lines = doc.splitTextToSize(clean(text), CONTENT_W - indent);
+    lines.forEach((ln) => {
+      doc.text(ln, MARGIN + indent, y);
+      y += gap;
+    });
+  };
+
+  // ── Header ──
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(...TEXT);
+  doc.text(clean(P.bio.name), MARGIN, y);
+  y += 5.5;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(...ACCENT);
+  doc.text("Game Producer | Project Manager | QA Lead | Publishing Coordinator", MARGIN, y);
+  y += 4;
+
+  doc.setFontSize(8);
+  doc.setTextColor(...MUTED);
+  doc.text(clean(`${P.bio.email}  |  ${P.bio.linkedin}  |  t.me/aloecastles  |  ${P.bio.location}`), MARGIN, y);
+  y += 2.5;
+  doc.setDrawColor(...MUTED);
+  doc.setLineWidth(0.15);
+  doc.line(MARGIN, y, MARGIN + CONTENT_W, y);
+  y += 3;
+
+  // ── Summary (keyword-rich) ──
+  section("Professional Summary");
+  body(
+    "Game industry Project Manager and QA Lead with 7+ years delivering shipped titles across PlayStation, Xbox, Nintendo Switch, Steam, Steam Deck, iOS and Android. Built and scaled QA teams 3x to 18+ specialists at Pushka Studios. Delivered every platform submission certified on the first attempt across PS, Xbox, Switch and Steam. Strong background in Agile/Scrum/Kanban, publishing coordination, LiveOps, stakeholder management, and cross-platform/cross-network multiplayer QA.",
+    { size: 8.2, gap: 3.4 }
+  );
+
+  // ── Core Competencies (ATS keyword block) ──
+  section("Core Competencies");
+  body(
+    "Project Management | Game Production | QA Leadership | Quality Assurance | Agile | Scrum | Kanban | Sprint Planning | Capacity Forecasting | Risk Management | Stakeholder Reporting | Cross-functional Coordination | Platform Certification | Store Submissions | LiveOps | Build Review Cycles | Localization (L10n) | Multiplayer QA | Co-op QA | Cross-platform QA | A/B Testing | KPIs | Roadmap Ownership | Hiring | Mentoring | Performance Reviews | Resource Allocation | Vendor / Partner Coordination | OKRs",
+    { size: 8, gap: 3.3 }
+  );
+
+  // ── Tools & Platforms ──
+  section("Tools & Platforms");
+  body(
+    "Tools: Jira (JQL, workspace admin, automation) | Confluence | Notion | Miro | TestRail | Testomat | Slack workflows | Git | Fiddler | Unity | Unreal Engine | PIX | RAZOR profilers | Win64 dedicated servers",
+    { size: 8, gap: 3.3 }
+  );
+  body(
+    "Platforms: PlayStation 4 / PS5 | Xbox One / Series X|S (winGDK) | Nintendo Switch | Steam Deck | Steam | Epic Games Store | Cloud Gaming | iOS | Android | SteamVR | Valve Index",
+    { size: 8, gap: 3.3 }
+  );
+
+  // ── Professional Experience (top 4) ──
+  section("Professional Experience");
+  const top = P.experience.slice(0, 4);
+  top.forEach((e) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...TEXT);
+    doc.text(clean(`${e.role} - ${e.org}`), MARGIN, y);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...MUTED);
+    const periodText = clean(e.period);
+    const periodWidth = doc.getTextWidth(periodText);
+    doc.text(periodText, MARGIN + CONTENT_W - periodWidth, y);
+    y += 3.2;
+    const bullets = e.bullets.slice(0, 2);
+    bullets.forEach((b) => {
+      body(`- ${b}`, { size: 7.8, gap: 3.1, indent: 2, color: TEXT });
+    });
+    y += 0.6;
   });
+
+  // ── Shipped Titles ──
+  section("Selected Shipped Titles");
+  body(
+    P.projects.map((p) => `${p.title} (${p.year}, ${p.platforms.join("/")})`).join(", "),
+    { size: 7.8, gap: 3.1 }
+  );
+  body(
+    `Additionally shipped ${P.ndaProjects.length} NDA projects across TPS action-adventure, FPS survival looter-shooter, turn-based and strategy board games, city builder, and tactical extraction shooter (mobile).`,
+    { size: 7.8, gap: 3.1 }
+  );
+
+  // ── Key Achievements ──
+  section("Key Achievements");
+  P.achievements.slice(0, 3).forEach((a) => {
+    body(`- ${a}`, { size: 7.8, gap: 3.1, indent: 2 });
+  });
+
+  // ── Education ──
+  section("Education & Certifications");
+  P.education.forEach((e) => {
+    body(
+      `${e.title} - ${e.org} (${e.year})${e.credential ? ` | Credential ID: ${e.credential.id}` : ""}`,
+      { size: 8, gap: 3.2 }
+    );
+  });
+
+  // ── Languages ──
+  section("Languages");
+  body("English (professional working) | Ukrainian (native) | Russian (fluent)", { size: 8, gap: 3.2 });
+
+  // ── Footer ──
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.5);
+  doc.setTextColor(...MUTED);
+  const today = new Date().toISOString().slice(0, 10);
+  doc.text(`Generated ${today}`, MARGIN, PAGE_H - 5);
+  const right = "Online portfolio: aloecastles.github.io";
+  const rightW = doc.getTextWidth(right);
+  doc.text(right, MARGIN + CONTENT_W - rightW, PAGE_H - 5);
+
+  doc.save(`Oleksii_Rohalskyi_CV_${today}.pdf`);
 }
 
 function CVDownloadFab() {
